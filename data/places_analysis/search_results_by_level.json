@@ -1,0 +1,168 @@
+{
+  "property_address": "5 settlers court, vermont south, vic, 3133",
+  "property_coordinates": {
+    "latitude": -37.8587538,
+    "longitude": 145.1868964
+  },
+  "timestamp": "2025-10-05T19:00:53.702216",
+  "api_calls_made": 6,
+  "search_strategy": {
+    "approach": "Batched searches per level for efficiency",
+    "Level_1_Impacts": "Batched type search within 3000m (1-2 API calls)",
+    "Level_2_Impacts": "Batched type search within 600m (1-2 API calls)",
+    "Level_3_Impacts": "Batched type search within 250m (1-2 API calls)",
+    "Level_4_Impacts": "All places within 100m, no type filter (1 API call)"
+  },
+  "results_by_level": {
+    "Level_1_Impacts": {
+      "radius_meters": 3000,
+      "types_searched": [
+        "airport"
+      ],
+      "unique_places": [],
+      "unique_places_count": 0
+    },
+    "Level_2_Impacts": {
+      "radius_meters": 600,
+      "types_searched": [
+        "auto_parts_store",
+        "bar",
+        "bar_and_grill",
+        "bowling_alley",
+        "car_repair",
+        "car_wash",
+        "casino",
+        "hardware_store",
+        "home_improvement_store",
+        "karaoke",
+        "movie_theater",
+        "night_club",
+        "pub",
+        "recycling_center",
+        "stadium",
+        "storage",
+        "waste_management",
+        "wine_bar"
+      ],
+      "unique_places": [],
+      "unique_places_count": 0
+    },
+    "Level_3_Impacts": {
+      "radius_meters": 250,
+      "types_searched": [
+        "aged_care",
+        "banquet_hall",
+        "bed_and_breakfast",
+        "bus_station",
+        "bus_stop",
+        "care_community",
+        "cemetery",
+        "child_care_agency",
+        "city_hall",
+        "cottage",
+        "courthouse",
+        "event_venue",
+        "extended_stay_hotel",
+        "fire_station",
+        "food_court",
+        "fuel",
+        "fuel_station",
+        "funeral_home",
+        "gas_station",
+        "government_office",
+        "guest_house",
+        "hospital",
+        "hostel",
+        "hotel",
+        "inn",
+        "library",
+        "liquor_store",
+        "local_government_office",
+        "lodging",
+        "motel",
+        "nursing_home",
+        "parking",
+        "petrol",
+        "petrol_station",
+        "police",
+        "post_office",
+        "preschool",
+        "primary_school",
+        "private_guest_room",
+        "railway_station",
+        "resort_hotel",
+        "retirement_home",
+        "school",
+        "secondary_school",
+        "shopping_mall",
+        "subway_station",
+        "taxi_stand",
+        "train_station",
+        "transit_station",
+        "university",
+        "wedding_venue"
+      ],
+      "unique_places": [
+        {
+          "types": [
+            "bus_stop",
+            "transit_station",
+            "point_of_interest",
+            "establishment"
+          ],
+          "formattedAddress": "Vermont South VIC 3133, Australia",
+          "location": {
+            "latitude": -37.85744,
+            "longitude": 145.18833999999998
+          },
+          "displayName": {
+            "text": "Colonial Dr/Burwood Hwy",
+            "languageCode": "en"
+          }
+        },
+        {
+          "types": [
+            "bus_stop",
+            "transit_station",
+            "point_of_interest",
+            "establishment"
+          ],
+          "formattedAddress": "Vermont South VIC 3133, Australia",
+          "location": {
+            "latitude": -37.85716,
+            "longitude": 145.18872000000002
+          },
+          "displayName": {
+            "text": "Warrington Ave/Burwood Hwy",
+            "languageCode": "en"
+          }
+        },
+        {
+          "types": [
+            "health",
+            "point_of_interest",
+            "establishment"
+          ],
+          "formattedAddress": "502-514 Burwood Hwy, Vermont South VIC 3133, Australia",
+          "location": {
+            "latitude": -37.858071599999995,
+            "longitude": 145.1852242
+          },
+          "displayName": {
+            "text": "Australian Unity Victoria Grange Retirement Community & Aged Care",
+            "languageCode": "en"
+          }
+        }
+      ],
+      "unique_places_count": 3
+    },
+    "Level_4_Impacts": {
+      "radius_meters": 100,
+      "types_searched": [
+        "ALL_TYPES"
+      ],
+      "unique_places": [],
+      "unique_places_count": 0
+    }
+  }
+}

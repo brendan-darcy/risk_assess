@@ -116,6 +116,82 @@ pipeline = GooglePlacesPipeline(config, reporter)
 results = pipeline.run("123 Main St, Sydney NSW")
 ```
 
+### MeshBlockAnalysisPipeline (`pipelines/mesh_block_analysis_pipeline.py`)
+Pipeline for analyzing Australian Statistical Geography Standard (ASGS) mesh blocks in relation to property locations.
+
+**Key Features:**
+- Load ASGS mesh block shapefiles (MB_2021_AUST_GDA2020)
+- Identify which mesh block contains a property
+- Find all mesh blocks within a radius buffer (with accurate metric CRS)
+- Export results to multiple formats (GeoJSON, CSV, Shapefile, TXT)
+- Calculate summary statistics by mesh block category
+- Support for coordinate reference system transformations
+
+**Key Methods:**
+- `load_mesh_blocks()` - Load shapefile data
+- `load_property_from_parcel(parcel_json_path)` - Load property from parcel.json
+- `create_property_gdf(longitude, latitude)` - Create property GeoDataFrame
+- `identify_property_meshblock()` - Find containing mesh block
+- `find_nearby_meshblocks()` - Find mesh blocks within buffer distance
+- `export_results(output_dir)` - Export to multiple formats
+- `get_summary_statistics()` - Get category counts and statistics
+- `run_full_analysis(parcel_json, output_dir)` - Complete workflow
+
+**Usage:**
+```python
+from mesh_block_analysis_pipeline import MeshBlockAnalysisPipeline
+
+analysis = MeshBlockAnalysisPipeline(
+    shapefile_path="data/raw/MB_2021_AUST_GDA2020.shp",
+    buffer_distance=2000  # 2km radius
+)
+results = analysis.run_full_analysis(
+    parcel_json_path="data/outputs/parcel.json",
+    output_dir="data/outputs"
+)
+```
+
+### SpatialVisualizationPipeline (`pipelines/spatial_visualization_pipeline.py`)
+Pipeline for creating publication-quality maps and spatial visualizations.
+
+**Key Features:**
+- Visualize mesh blocks with color-coded categories
+- Plot property locations with custom markers
+- Display buffer zones and boundaries
+- Overlay Google Places impact data with labels
+- Generate comprehensive legends with counts
+- Export high-resolution maps (PNG)
+
+**Default Color Scheme:**
+- Residential: Pale yellow (#FFFACD)
+- Commercial: Sky blue (#87CEEB)
+- Industrial: Light grey (#D3D3D3)
+- Parkland: Light green (#90EE90)
+- Education: Light pink (#FFB6C1)
+- Transport: Orange (#FFA500)
+
+**Key Methods:**
+- `load_places_from_json(places_json_path)` - Load Google Places data
+- `create_map(mesh_blocks, property_point, buffer, places)` - Create visualization
+- `save_map(output_path)` - Export map to file
+- `print_summary(mesh_blocks, places)` - Print category statistics
+- `create_complete_visualization()` - One-call complete workflow
+
+**Usage:**
+```python
+from spatial_visualization_pipeline import SpatialVisualizationPipeline
+
+viz = SpatialVisualizationPipeline(figsize=(14, 12), dpi=200)
+map_path = viz.create_complete_visualization(
+    mesh_blocks=mesh_blocks_gdf,
+    property_point=property_gdf,
+    property_buffer=buffer_geometry,
+    output_path="data/outputs/map.png",
+    places_json_path="data/places_analysis/property_impacts.json",
+    title="Property Risk Analysis Map"
+)
+```
+
 ### GeospatialAPIClient (`pipelines/geospatial_api_client.py`)
 Wrapper for CoreLogic Geospatial API, inherits from `CoreLogicAuth`.
 
@@ -204,6 +280,33 @@ python scripts/run_places_analysis.py --address "248 Coward St, Mascot NSW 2020"
 
 # Requires GOOGLE_API_KEY environment variable
 export GOOGLE_API_KEY="your_api_key_here"
+```
+
+**Mesh Block Analysis (End-to-End):**
+```bash
+# Direct from address - complete end-to-end analysis
+python scripts/run_mesh_block_analysis.py --address "5 Settlers Court, Vermont South VIC 3133"
+
+# With property ID
+python scripts/run_mesh_block_analysis.py --property-id 13683380
+
+# Include Google Places analysis in same run
+python scripts/run_mesh_block_analysis.py --address "123 Main St, Sydney NSW" --include-places
+
+# Custom buffer distance (5km instead of default 2km)
+python scripts/run_mesh_block_analysis.py --address "123 Main St" --buffer 5000
+
+# Prerequisites:
+# - MB_2021_AUST_GDA2020.shp in data/raw/
+# - CORELOGIC_CLIENT_ID and CORELOGIC_CLIENT_SECRET in environment
+# - GOOGLE_API_KEY in environment (if using --include-places)
+
+# Outputs:
+# - data/outputs/meshblocks_within_*m.geojson
+# - data/outputs/meshblocks_within_*m.csv
+# - data/outputs/meshblocks_within_*m.shp
+# - data/outputs/meshblock_codes_*m.txt
+# - data/outputs/meshblocks_map.png (with places overlay if included)
 ```
 
 ### Get Authentication Details

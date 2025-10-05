@@ -1,0 +1,413 @@
+{
+  "property_address": "5 settlers court, vermont south, vic, 3133",
+  "property_coordinates": {
+    "latitude": -37.8587538,
+    "longitude": 145.1868964
+  },
+  "timestamp": "2025-10-05T19:00:53.704845",
+  "level_radii": {
+    "Level_1_Impacts": 3000,
+    "Level_2_Impacts": 600,
+    "Level_3_Impacts": 250,
+    "Level_4_Impacts": 100
+  },
+  "impact_analysis": {
+    "Level_1_Impacts": {
+      "Major Disruption": {
+        "searched_types": [
+          "airport"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      }
+    },
+    "Level_2_Impacts": {
+      "Industrial & Environmental": {
+        "searched_types": [
+          "car_wash",
+          "car_repair",
+          "storage",
+          "waste_management",
+          "recycling_center",
+          "hardware_store",
+          "home_improvement_store",
+          "auto_parts_store"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Retail Noise": {
+        "searched_types": [
+          "night_club",
+          "bar",
+          "casino",
+          "bowling_alley",
+          "movie_theater",
+          "stadium",
+          "karaoke",
+          "pub",
+          "wine_bar",
+          "bar_and_grill"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      }
+    },
+    "Level_3_Impacts": {
+      "Fuel": {
+        "searched_types": [
+          "fuel_station",
+          "gas_station",
+          "petrol_station",
+          "petrol",
+          "fuel"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Child Care & Early Education": {
+        "searched_types": [
+          "child_care_agency",
+          "preschool"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Rail": {
+        "searched_types": [
+          "train_station",
+          "railway_station"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Institutional": {
+        "searched_types": [
+          "cemetery",
+          "funeral_home",
+          "courthouse",
+          "police",
+          "fire_station",
+          "hospital"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Other Transit": {
+        "searched_types": [
+          "bus_station",
+          "subway_station",
+          "taxi_stand",
+          "transit_station",
+          "parking",
+          "bus_stop"
+        ],
+        "closest_place": {
+          "name": "Colonial Dr/Burwood Hwy",
+          "latitude": -37.85744,
+          "longitude": 145.18833999999998,
+          "types": [
+            "bus_stop",
+            "transit_station",
+            "point_of_interest",
+            "establishment"
+          ],
+          "formatted_address": "Vermont South VIC 3133, Australia",
+          "distance_meters": 193.4
+        },
+        "total_found": 2
+      },
+      "Retail Volume": {
+        "searched_types": [
+          "shopping_mall",
+          "liquor_store",
+          "food_court"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Accommodation": {
+        "searched_types": [
+          "lodging",
+          "hotel",
+          "bed_and_breakfast",
+          "motel",
+          "cottage",
+          "resort_hotel",
+          "inn",
+          "private_guest_room",
+          "guest_house",
+          "extended_stay_hotel",
+          "hostel"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Events & Venues": {
+        "searched_types": [
+          "event_venue",
+          "wedding_venue",
+          "banquet_hall"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Care Facilities": {
+        "searched_types": [
+          "aged_care",
+          "nursing_home",
+          "retirement_home",
+          "care_community"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Government & Public Services": {
+        "searched_types": [
+          "government_office",
+          "local_government_office",
+          "city_hall",
+          "post_office"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Education": {
+        "searched_types": [
+          "school",
+          "primary_school",
+          "secondary_school",
+          "university",
+          "library"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      }
+    },
+    "Level_4_Impacts": {
+      "Personal Services": {
+        "searched_types": [
+          "hair_salon",
+          "hair_care",
+          "beauty_salon",
+          "nail_salon",
+          "barber_shop",
+          "spa",
+          "massage",
+          "laundry",
+          "beautician",
+          "body_art_service",
+          "foot_care",
+          "sauna",
+          "public_bath",
+          "tanning_studio",
+          "makeup_artist"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Professional Services": {
+        "searched_types": [
+          "accounting",
+          "lawyer",
+          "consultant",
+          "real_estate_agency",
+          "insurance_agency",
+          "electrician",
+          "plumber",
+          "roofing_contractor",
+          "general_contractor",
+          "finance",
+          "painter"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Healthcare": {
+        "searched_types": [
+          "doctor",
+          "dentist",
+          "dental_clinic",
+          "medical_lab",
+          "pharmacy",
+          "drugstore",
+          "physiotherapist",
+          "veterinary_care",
+          "chiropractor",
+          "wellness_center",
+          "skin_care_clinic"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Food Retail": {
+        "searched_types": [
+          "bakery",
+          "food_store",
+          "grocery_store",
+          "supermarket",
+          "asian_grocery_store",
+          "butcher_shop",
+          "market",
+          "candy_store",
+          "chocolate_shop",
+          "confectionery",
+          "dessert_shop",
+          "ice_cream_shop"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Other Retail": {
+        "searched_types": [
+          "clothing_store",
+          "shoe_store",
+          "jewelry_store",
+          "electronics_store",
+          "pet_store",
+          "florist",
+          "gift_shop",
+          "book_store",
+          "home_goods_store",
+          "furniture_store",
+          "sporting_goods_store",
+          "bicycle_store",
+          "department_store",
+          "cell_phone_store"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Quick Dining": {
+        "searched_types": [
+          "cafe",
+          "coffee_shop",
+          "meal_takeaway",
+          "meal_delivery",
+          "food_delivery",
+          "sandwich_shop",
+          "cafeteria",
+          "donut_shop",
+          "breakfast_restaurant",
+          "hamburger_restaurant",
+          "diner"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Restaurants": {
+        "searched_types": [
+          "restaurant",
+          "american_restaurant",
+          "mexican_restaurant",
+          "italian_restaurant",
+          "pizza_restaurant",
+          "barbecue_restaurant",
+          "fine_dining_restaurant",
+          "vegan_restaurant",
+          "vegetarian_restaurant",
+          "chinese_restaurant",
+          "asian_restaurant",
+          "korean_restaurant",
+          "indian_restaurant",
+          "middle_eastern_restaurant",
+          "steak_house",
+          "buffet_restaurant",
+          "dessert_restaurant"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Alternative Services": {
+        "searched_types": [
+          "astrologer",
+          "psychic"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Entertainment & Catering": {
+        "searched_types": [
+          "catering_service"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Logistics & Wholesale": {
+        "searched_types": [
+          "wholesaler",
+          "courier_service",
+          "moving_company"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Parks & Gardens": {
+        "searched_types": [
+          "park",
+          "playground",
+          "garden",
+          "picnic_ground",
+          "botanical_garden",
+          "farm"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Sports & Fitness": {
+        "searched_types": [
+          "sports_activity_location",
+          "sports_complex",
+          "fitness_center",
+          "gym",
+          "yoga_studio",
+          "sports_club",
+          "athletic_field",
+          "sports_coaching",
+          "golf_course",
+          "bowling_alley",
+          "swimming_pool"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Community & Culture": {
+        "searched_types": [
+          "church",
+          "place_of_worship",
+          "community_center",
+          "tourist_attraction",
+          "art_gallery",
+          "museum",
+          "historical_landmark",
+          "tour_agency"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Convenience Shopping": {
+        "searched_types": [
+          "supermarket",
+          "grocery_store",
+          "convenience_store",
+          "atm",
+          "bank"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      },
+      "Travel Services": {
+        "searched_types": [
+          "travel_agency"
+        ],
+        "closest_place": null,
+        "total_found": 0
+      }
+    }
+  },
+  "summary": {
+    "total_categories": 29,
+    "categories_with_matches": 1,
+    "categories_without_matches": 28
+  }
+}
