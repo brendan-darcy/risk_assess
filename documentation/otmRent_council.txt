@@ -1,0 +1,159 @@
+GET
+/search/au/property/councilArea/{councilAreaId}/otmForRent
+Search OTM For Rent by Council Area
+
+
+Use the Property Search OTM For Rent by Council Area service to get a list of properties for a specific council area that are on the market (OTM) for Rent. You can filter and sort the results based on multiple parameters. The response includes a list of properties with property summary and the OTM-related data specific to the property's campaign. The results in the response are sorted in ascending order based on the property's address.
+
+Parameters
+Try it out
+Name	Description
+period
+(query)
+The time period of the rental term. Use this to filter the results based on the specified time period. Available values are:
+
+D for daily,
+W for weekly,
+F for fortnightly,
+M for monthly,
+Q for quarterly, and
+A for annual.
+period
+activeCampaignOnly
+(query)
+Filter on the status of the OTM For Rent campaign. Although a property can be identified as being OTM for rent,there are scenarios when ads may still be displayed despite the property being given for rent. This flag will help identify those campaigns which are truely active (no for rent events against the campaign).
+This is passed as either 'true' or 'false'.
+When excluded, this will returns only active campaigns.
+activeCampaignOnly = true -> return only active campaigns.
+activeCampaignOnly= false -> return both active and inactive . i.e. all
+Default value is true.
+
+activeCampaignOnly
+date
+(query)
+The date of the property's latest advertisement, as recorded by CoreLogic. Use this to filter the results based on the latest advertisement date.
+
+The date value must be in the format YYYYMMDD (ISO 8601 format without the hyphens)
+
+You can either pass the exact date or a range of dates. If you specify:
+
+date=20160101, the response includes all the properties that have their latest advertisement date as January 1, 2016.
+date=20151201-20151231, the response includes all the properties that have the latest advertisement date between December 1, 2015, to December 31, 2015.
+date=20160101-, the response includes all the properties that have the latest advertisement date from January 1, 2016, to today.
+date=-20160101, the response includes all the properties that have the latest advertisement date before January 1, 2016.
+date
+price
+(query)
+The For Rent advertisement price. Use this to filter the results based on the price of the for rent advertisement. You can either pass the exact amount or a range of amounts. If you specify:
+
+price=500, the response includes all the properties that have their for rent advertisement price as $500.
+price=400-600, the response includes all the properties that have the for rent advertisement price between $400 and $600.
+price=350-, the response includes all the properties that have the for rent advertisement price as $350 or above.
+price=-500, the response includes all the properties that have the for rent advertisement price as $550 and below.
+price
+baths
+(query)
+The number of bathrooms. Use this to filter the matched properties. You can either pass the exact value or a range of values.
+
+Exact value
+If you specify baths=4, the response includes all the properties with exactly 4 bathrooms.
+Range of values
+If you specify baths=2-5, the response includes all the properties where the number of bathrooms is between 2 and 5.
+If you specify baths=3-, the response includes all the properties with 3 or more bathrooms.
+If you specify baths=-4, the response includes all the properties with 4 or fewer bathrooms.
+baths
+beds
+(query)
+The number of bedrooms. Use this to filter the matched properties. You can either pass the exact value or a range of values.
+
+Exact value
+If you specify beds=4, the response includes all the properties with exactly 4 bedrooms.
+Range of values
+If you specify beds=2-5, the response includes all the properties where the number of bedrooms is between 2 and 5.
+If you specify beds=3-, the response includes all the properties with 3 or more bedrooms.
+If you specify beds=-4, the response includes all the properties with 4 or fewer bedrooms.
+beds
+carSpaces
+(query)
+The number of car spaces. Use this to filter the matched properties. You can either pass the exact value or a range of values.
+
+Exact value
+If you specify carSpaces=2, the response includes all the properties with exactly 2 car spaces.
+Range of values
+If you specify carSpaces=1-3, the response includes all the properties where the number of car spaces is between 1 and 3.
+If you specify carSpaces=1-, the response includes all the properties with 1 or more car spaces.
+If you specify carSpaces=-3, the response includes all the properties with 3 or fewer car spaces.
+carSpaces
+landArea
+(query)
+The property's land area in meters squared (m²). Use this to filter the matched properties.
+You can either pass the exact value or a range of values.
+
+Exact value
+If you specify landArea=300, the response includes all the properties with exactly 300 m² land area.
+Range of values
+If you specify landArea=300-600, the response includes all the properties where the land area is between 300 m² and 600 m².
+If you specify landArea=300-, the response includes all the properties with land area 300 m² or above.
+If you specify landArea=-600, the response includes all the properties with land area 600 m² or less.
+landArea
+includeHistoric
+(query)
+includeHistoric
+pTypes
+(query)
+The type of the property. Use this to filter the matched properties. You can either pass a single value or a comma-separated list of allowed values.
+
+Single value
+If you specify pType=UNIT, the response includes all the properties which are of type UNIT.
+Multiple values
+If you specify pType=LAND, COMMERCIAL, OTHER, the response includes all the properties which are of type LAND, or COMMERCIAL, or OTHER.
+The available types are:
+
+BUSINESS
+COMMERCIAL
+COMMUNITY
+FARM
+FLATS
+HOUSE
+LAND
+OTHER
+STORAGE_UNIT
+UNIT
+pTypes
+sort
+(query)
+The sorting criteria. Use this to sort the matched results based on a specific parameter in a particular order. To sort using more than one parameters, specify multiple sort values in your query in the following format:
+sort={attribute_1},{sort_order}&sort={attribute_2},{sort_order}...&{attribute_n},{sort_order}
+
+Available attributes are:
+
+bath
+beds
+carSpaces
+landArea
+pType
+Sort order can be either asc for ascending or desc for descending order.
+
+If you do not specify a sort order, the results are sorted in ascending order by default.
+
+Example:
+
+Specify sort=beds,desc to sort the results based on the number of beds and arranged in descending order.
+sort
+size
+(query)
+Use this parameter to specify the number of records per page. By default, the response contains 20 records per page.
+
+Any higher value than 20 results in an invalid request.
+
+size
+page
+(query)
+Use this parameter to specify the page number of the results to return. By default, this always returns the first page (that is page=0).
+
+page
+councilAreaId *
+(path)
+The unique internal identifier for the council area id.
+
+councilAreaId
