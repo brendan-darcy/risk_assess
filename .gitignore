@@ -192,4 +192,4 @@ temp/
 .tmp/
 
 # Shell scripts with API keys
-setup_claude_env.sh
+setup_claude_env.shtemplates/
