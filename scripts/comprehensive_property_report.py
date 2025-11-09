@@ -103,6 +103,7 @@ class ComprehensivePropertyReporter:
             "last_sale": f"/property-details/au/properties/{property_id}/sales/last",
             "sales": f"/property-details/au/properties/{property_id}/sales",
             "sales_otm": f"/property-details/au/properties/{property_id}/otm/campaign/sales",
+            "rentals_otm": f"/property-details/au/properties/{property_id}/otm/campaign/rentals",
             "timeline": f"/property-timeline/au/properties/{property_id}/timeline",
             "advertisements": f"/property/au/v1/property/{property_id}/advertisements.json",
         }
