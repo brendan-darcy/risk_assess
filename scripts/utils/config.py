@@ -14,7 +14,7 @@ Usage:
 
     # Load from file
     custom_config = AppConfig.from_file('custom_config.json')
-
+#####
 Author: Brendan Darcy
 Date: 2025-11-09
 """
