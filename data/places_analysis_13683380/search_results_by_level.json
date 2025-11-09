@@ -1,10 +1,10 @@
 {
-  "property_address": "18 Fowler Crescent, South Coogee NSW 2034",
+  "property_address": "5 Settlers Court, Vermont South VIC 3133",
   "property_coordinates": {
-    "latitude": -33.9364041,
-    "longitude": 151.2546687
+    "latitude": -37.8587538,
+    "longitude": 145.1868964
   },
-  "timestamp": "2025-11-09T18:35:17.240042",
+  "timestamp": "2025-11-09T18:46:17.164967",
   "api_calls_made": 6,
   "search_strategy": {
     "approach": "Batched searches per level for efficiency",
@@ -19,26 +19,8 @@
       "types_searched": [
         "airport"
       ],
-      "unique_places": [
-        {
-          "types": [
-            "heliport",
-            "airport",
-            "point_of_interest",
-            "establishment"
-          ],
-          "formattedAddress": "Randwick NSW 2031, Australia",
-          "location": {
-            "latitude": -33.9194806,
-            "longitude": 151.2391961
-          },
-          "displayName": {
-            "text": "Helipad Hospital",
-            "languageCode": "cs"
-          }
-        }
-      ],
-      "unique_places_count": 1
+      "unique_places": [],
+      "unique_places_count": 0
     },
     "Level_2_Impacts": {
       "radius_meters": 600,
@@ -62,26 +44,8 @@
         "waste_management",
         "wine_bar"
       ],
-      "unique_places": [
-        {
-          "types": [
-            "moving_company",
-            "storage",
-            "point_of_interest",
-            "establishment"
-          ],
-          "formattedAddress": "393 Malabar Rd, Maroubra NSW 2035, Australia",
-          "location": {
-            "latitude": -33.941249,
-            "longitude": 151.253315
-          },
-          "displayName": {
-            "text": "Van Dude",
-            "languageCode": "en"
-          }
-        }
-      ],
-      "unique_places_count": 1
+      "unique_places": [],
+      "unique_places_count": 0
     },
     "Level_3_Impacts": {
       "radius_meters": 250,
@@ -146,13 +110,13 @@
             "point_of_interest",
             "establishment"
           ],
-          "formattedAddress": "South Coogee NSW 2034, Australia",
+          "formattedAddress": "Vermont South VIC 3133, Australia",
           "location": {
-            "latitude": -33.93552,
-            "longitude": 151.253021
+            "latitude": -37.85744,
+            "longitude": 145.18833999999998
           },
           "displayName": {
-            "text": "Moverly Rd at Bryne Ave",
+            "text": "Colonial Dr/Burwood Hwy",
             "languageCode": "en"
           }
         },
@@ -163,18 +127,34 @@
             "point_of_interest",
             "establishment"
           ],
-          "formattedAddress": "South Coogee NSW 2034, Australia",
+          "formattedAddress": "Vermont South VIC 3133, Australia",
           "location": {
-            "latitude": -33.935032,
-            "longitude": 151.253006
+            "latitude": -37.85716,
+            "longitude": 145.18872000000002
           },
           "displayName": {
-            "text": "Moverly Rd at Asturias Ave",
+            "text": "Warrington Ave/Burwood Hwy",
+            "languageCode": "en"
+          }
+        },
+        {
+          "types": [
+            "point_of_interest",
+            "health",
+            "establishment"
+          ],
+          "formattedAddress": "502-514 Burwood Hwy, Vermont South VIC 3133, Australia",
+          "location": {
+            "latitude": -37.858071599999995,
+            "longitude": 145.1852242
+          },
+          "displayName": {
+            "text": "Australian Unity Victoria Grange Retirement Community & Aged Care",
             "languageCode": "en"
           }
         }
       ],
-      "unique_places_count": 2
+      "unique_places_count": 3
     },
     "Level_4_Impacts": {
       "radius_meters": 100,

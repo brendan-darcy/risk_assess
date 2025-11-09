@@ -87,10 +87,10 @@ class ComprehensivePropertyReporter:
 
     def get_comprehensive_property_details(self, property_id: str) -> Dict[str, Any]:
         """
-        Get all property details from 12 CoreLogic API endpoints.
+        Get all property details from 13 CoreLogic API endpoints.
         Based on generate_property_results from corelogic_processor_updated.py
         """
-        self.reporter.info("📋 Fetching comprehensive property details from 12 API endpoints...")
+        self.reporter.info("📋 Fetching comprehensive property details from 13 API endpoints...")
 
         endpoints = {
             "location": f"/property-details/au/properties/{property_id}/location",
@@ -444,6 +444,7 @@ class ComprehensivePropertyReporter:
                 'last_sale': property_details.get('last_sale'),
                 'sales_history': property_details.get('sales'),
                 'sales_otm': property_details.get('sales_otm'),
+                'rentals_otm': property_details.get('rentals_otm'),
                 'timeline': property_details.get('timeline'),
                 'advertisements': property_details.get('advertisements')
             },
@@ -474,7 +475,7 @@ def print_summary(report: Dict[str, Any]):
     print(f"⏰ Extracted: {metadata['extraction_timestamp']}", file=sys.stderr)
 
     # Property Details Summary
-    print(f"\n📋 PROPERTY DETAILS (12 API ENDPOINTS)", file=sys.stderr)
+    print(f"\n📋 PROPERTY DETAILS (13 API ENDPOINTS)", file=sys.stderr)
     details = report['property_details']
     for key, value in details.items():
         if value and not isinstance(value, dict) or (isinstance(value, dict) and not value.get('error')):

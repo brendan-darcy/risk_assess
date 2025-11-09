@@ -30,6 +30,9 @@ Examples:
   # Custom output directory
   python scripts/run_places_analysis.py --address "18 Fowler Crescent, South Coogee NSW 2034" --output-dir data/coogee_analysis
 
+  source venv/bin/activate && python3 scripts/run_places_analysis.py --address "18 Fowler Crescent, South Coogee NSW 2034"
+
+
 Output:
   Creates 3 JSON files in output directory:
     - search_results_by_level.json   (all places found per level)

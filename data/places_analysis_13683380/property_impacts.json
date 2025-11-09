@@ -1,10 +1,10 @@
 {
-  "property_address": "18 Fowler Crescent, South Coogee NSW 2034",
+  "property_address": "5 Settlers Court, Vermont South VIC 3133",
   "property_coordinates": {
-    "latitude": -33.9364041,
-    "longitude": 151.2546687
+    "latitude": -37.8587538,
+    "longitude": 145.1868964
   },
-  "timestamp": "2025-11-09T18:35:17.242410",
+  "timestamp": "2025-11-09T18:46:17.166822",
   "level_radii": {
     "Level_1_Impacts": 3000,
     "Level_2_Impacts": 600,
@@ -17,20 +17,8 @@
         "searched_types": [
           "airport"
         ],
-        "closest_place": {
-          "name": "Helipad Hospital",
-          "latitude": -33.9194806,
-          "longitude": 151.2391961,
-          "types": [
-            "heliport",
-            "airport",
-            "point_of_interest",
-            "establishment"
-          ],
-          "formatted_address": "Randwick NSW 2031, Australia",
-          "distance_meters": 2360.2
-        },
-        "total_found": 1
+        "closest_place": null,
+        "total_found": 0
       }
     },
     "Level_2_Impacts": {
@@ -45,20 +33,8 @@
           "home_improvement_store",
           "auto_parts_store"
         ],
-        "closest_place": {
-          "name": "Van Dude",
-          "latitude": -33.941249,
-          "longitude": 151.253315,
-          "types": [
-            "moving_company",
-            "storage",
-            "point_of_interest",
-            "establishment"
-          ],
-          "formatted_address": "393 Malabar Rd, Maroubra NSW 2035, Australia",
-          "distance_meters": 551.8
-        },
-        "total_found": 1
+        "closest_place": null,
+        "total_found": 0
       },
       "Retail Noise": {
         "searched_types": [
@@ -127,17 +103,17 @@
           "bus_stop"
         ],
         "closest_place": {
-          "name": "Moverly Rd at Bryne Ave",
-          "latitude": -33.93552,
-          "longitude": 151.253021,
+          "name": "Colonial Dr/Burwood Hwy",
+          "latitude": -37.85744,
+          "longitude": 145.18833999999998,
           "types": [
             "bus_stop",
             "transit_station",
             "point_of_interest",
             "establishment"
           ],
-          "formatted_address": "South Coogee NSW 2034, Australia",
-          "distance_meters": 181.2
+          "formatted_address": "Vermont South VIC 3133, Australia",
+          "distance_meters": 193.4
         },
         "total_found": 2
       },
@@ -431,7 +407,7 @@
   },
   "summary": {
     "total_categories": 29,
-    "categories_with_matches": 3,
-    "categories_without_matches": 26
+    "categories_with_matches": 1,
+    "categories_without_matches": 28
   }
 }

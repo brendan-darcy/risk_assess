@@ -1,0 +1,25 @@
+# Core Dependencies for Risk Assessment System
+# Install with: pip install -r requirements.txt
+
+# HTTP Requests & API Integration
+requests>=2.32.0
+
+# Data Processing
+pandas>=2.3.0
+numpy>=2.3.0
+
+# Geospatial
+geopy>=2.4.0
+geopandas>=1.1.0
+shapely>=2.0.0
+
+# Visualization
+matplotlib>=3.10.0
+folium>=0.20.0
+
+# Configuration
+python-dotenv>=1.2.0
+
+# Date/Time Utilities
+python-dateutil>=2.9.0
+pytz>=2025.0

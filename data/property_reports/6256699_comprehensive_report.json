@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "extraction_timestamp": "2025-11-09T18:05:00.406129",
+    "extraction_timestamp": "2025-11-09T18:23:04.887545",
     "address": "3 Nymboida Street, South Coogee, NSW, 2034",
     "property_id": 6256699,
     "state": "NSW",
@@ -247,6 +247,10 @@
         ]
       }
     },
+    "rentals_otm": {
+      "error": "HTTP 401",
+      "message": "\n            {\n                \"messages\": [\n                    {\n                        \"type\": \"ERROR\",\n                        \"message\": \"Unauthorized: Invalid API call as no apiproduct match fo"
+    },
     "timeline": {
       "eventTimeline": [
         {
@@ -346,8 +350,8 @@
         }
       ],
       "systemInfo": {
-        "instanceName": "75:8080",
-        "requestDate": "2025-11-09T07:04:54.787Z"
+        "instanceName": "15:8080",
+        "requestDate": "2025-11-09T07:22:59.522Z"
       }
     }
   },
@@ -6384,5 +6388,64 @@
       "unavailable_metrics": 1
     }
   },
-  "maps_exported": null
+  "maps_exported": null,
+  "google_places_impact": {
+    "total_categories": 0,
+    "categories_with_matches": 0,
+    "categories_without_matches": 0,
+    "distance_distribution": {},
+    "level_statistics": {
+      "Level_1_Impacts": {
+        "radius_meters": 3000,
+        "total_categories": 1,
+        "categories_with_matches": 1,
+        "categories_without_matches": 0,
+        "total_places_searched": 1
+      },
+      "Level_2_Impacts": {
+        "radius_meters": 600,
+        "total_categories": 2,
+        "categories_with_matches": 1,
+        "categories_without_matches": 1,
+        "total_places_searched": 1
+      },
+      "Level_3_Impacts": {
+        "radius_meters": 250,
+        "total_categories": 11,
+        "categories_with_matches": 1,
+        "categories_without_matches": 10,
+        "total_places_searched": 2
+      },
+      "Level_4_Impacts": {
+        "radius_meters": 100,
+        "total_categories": 15,
+        "categories_with_matches": 0,
+        "categories_without_matches": 15,
+        "total_places_searched": 0
+      }
+    },
+    "closest_impacts": [
+      {
+        "category": "Other Transit",
+        "name": "Moverly Rd at Bryne Ave",
+        "distance_meters": 181.2,
+        "level": "Level_3_Impacts",
+        "address": "South Coogee NSW 2034, Australia"
+      },
+      {
+        "category": "Industrial & Environmental",
+        "name": "Van Dude",
+        "distance_meters": 551.8,
+        "level": "Level_2_Impacts",
+        "address": "393 Malabar Rd, Maroubra NSW 2035, Australia"
+      },
+      {
+        "category": "Major Disruption",
+        "name": "Helipad Hospital",
+        "distance_meters": 2360.2,
+        "level": "Level_1_Impacts",
+        "address": "Randwick NSW 2031, Australia"
+      }
+    ]
+  }
 }

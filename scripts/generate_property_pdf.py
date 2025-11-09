@@ -1079,6 +1079,49 @@ class PropertyDataPDFGenerator:
                             data_rows.append(("Rent Date", rm['median_rent_date']))
                     data_rows.append(("", ""))
 
+        # Google Places Impact Analysis
+        places_impact = report.get('google_places_impact')
+        if places_impact and not places_impact.get('error'):
+            data_rows.append(("GOOGLE PLACES IMPACT ANALYSIS", ""))
+
+            # Summary statistics
+            total_cats = places_impact.get('total_categories', 0)
+            with_matches = places_impact.get('categories_with_matches', 0)
+            data_rows.append(("Total Categories Analyzed", str(total_cats)))
+            data_rows.append(("Categories with Nearby Places", f"{with_matches}/{total_cats}"))
+            data_rows.append(("", ""))
+
+            # Distance distribution
+            dist_dist = places_impact.get('distance_distribution', {})
+            if dist_dist:
+                data_rows.append(("DISTANCE SUMMARY", ""))
+                if 'closest_meters' in dist_dist:
+                    data_rows.append(("Closest Impact", f"{dist_dist['closest_meters']:.0f}m"))
+                if 'furthest_meters' in dist_dist:
+                    data_rows.append(("Furthest Impact", f"{dist_dist['furthest_meters']:.0f}m"))
+                if 'median_meters' in dist_dist:
+                    data_rows.append(("Median Distance", f"{dist_dist['median_meters']:.0f}m"))
+
+                # Distance ranges
+                data_rows.append(("Within 100m", str(dist_dist.get('within_100m', 0))))
+                data_rows.append(("Within 250m", str(dist_dist.get('within_250m', 0))))
+                data_rows.append(("Within 600m", str(dist_dist.get('within_600m', 0))))
+                data_rows.append(("Within 3000m", str(dist_dist.get('within_3000m', 0))))
+                data_rows.append(("", ""))
+
+            # Top 10 closest impacts
+            closest_impacts = places_impact.get('closest_impacts', [])[:10]
+            if closest_impacts:
+                data_rows.append(("CLOSEST PLACES BY CATEGORY", ""))
+                for impact in closest_impacts:
+                    category = impact.get('category', 'Unknown').replace('_', ' ').title()
+                    name = impact.get('name', 'N/A')
+                    distance = impact.get('distance_meters', 0)
+                    level = impact.get('level', 'N/A')
+
+                    data_rows.append((f"{category}", f"{name} ({distance:.0f}m)"))
+                data_rows.append(("", ""))
+
         return data_rows
 
     def _load_mesh_block_summary(self, output_dir: Path = None) -> Optional[Dict[str, Any]]:

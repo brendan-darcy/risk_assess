@@ -1,30 +1,30 @@
 {
   "summary": {
     "total_categories": 29,
-    "categories_with_matches": 3,
-    "categories_without_matches": 26
+    "categories_with_matches": 1,
+    "categories_without_matches": 28
   },
   "level_statistics": {
     "Level_1_Impacts": {
       "radius_meters": 3000,
       "total_categories": 1,
-      "categories_with_matches": 1,
-      "categories_without_matches": 0,
-      "total_places_searched": 1
+      "categories_with_matches": 0,
+      "categories_without_matches": 1,
+      "total_places_searched": 0
     },
     "Level_2_Impacts": {
       "radius_meters": 600,
       "total_categories": 2,
-      "categories_with_matches": 1,
-      "categories_without_matches": 1,
-      "total_places_searched": 1
+      "categories_with_matches": 0,
+      "categories_without_matches": 2,
+      "total_places_searched": 0
     },
     "Level_3_Impacts": {
       "radius_meters": 250,
       "total_categories": 11,
       "categories_with_matches": 1,
       "categories_without_matches": 10,
-      "total_places_searched": 2
+      "total_places_searched": 3
     },
     "Level_4_Impacts": {
       "radius_meters": 100,
@@ -35,13 +35,13 @@
     }
   },
   "closest_places_distance_distribution": {
-    "total_closest_places": 3,
-    "closest_m": 181.2,
-    "furthest_m": 2360.2,
-    "median_m": 551.8,
+    "total_closest_places": 1,
+    "closest_m": 193.4,
+    "furthest_m": 193.4,
+    "median_m": 193.4,
     "within_100m": 0,
     "within_250m": 1,
-    "within_600m": 2,
-    "within_3000m": 3
+    "within_600m": 1,
+    "within_3000m": 1
   }
 }
