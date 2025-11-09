@@ -1,0 +1,35 @@
+[flake8]
+# Flake8 Configuration for Risk Assessment System
+
+# Maximum line length
+max-line-length = 100
+
+# Ignore specific errors
+ignore =
+    E203,  # Whitespace before ':' (conflicts with black)
+    E501,  # Line too long (handled by black)
+    W503,  # Line break before binary operator (conflicts with black)
+    E722,  # Bare except (allow for compatibility)
+
+# Exclude paths
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    env,
+    *.egg-info,
+    build,
+    dist,
+    data,
+    templates,
+    notebooks
+
+# Maximum complexity
+max-complexity = 15
+
+# Show source code for errors
+show-source = True
+
+# Count errors
+count = True

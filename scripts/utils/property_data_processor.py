@@ -18,7 +18,7 @@ import time
 from typing import List, Dict, Any, Optional, Tuple
 from pathlib import Path
 
-from pipeline_utils import AuthenticatedPipeline, DataProcessor, PipelineError, ErrorHandler
+from .pipeline_utils import AuthenticatedPipeline, DataProcessor, PipelineError, ErrorHandler
 
 
 class PropertyDataProcessor(AuthenticatedPipeline):
@@ -688,7 +688,7 @@ class PropertyDataProcessor(AuthenticatedPipeline):
         Returns:
             List of rental properties enriched with indexation data
         """
-        from pipeline_utils import index_value_to_date
+        from .pipeline_utils import index_value_to_date
         import pandas as pd
         
         enriched_rentals = []

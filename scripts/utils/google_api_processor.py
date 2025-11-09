@@ -28,7 +28,7 @@ from datetime import datetime
 from typing import Dict, List, Any, Optional, Tuple
 from geopy.distance import geodesic
 
-from pipeline_utils import PipelineConfig, ProgressReporter, PipelineError, DataProcessor, FileManager
+from .pipeline_utils import PipelineConfig, ProgressReporter, PipelineError, DataProcessor, FileManager
 
 
 # ============================================================================

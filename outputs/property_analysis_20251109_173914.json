@@ -1,0 +1,462 @@
+{
+  "timestamp": "2025-11-09T17:39:14.272846",
+  "input_address": "4 Clifton Court, Somers, VIC 3927",
+  "property_id": 13068979,
+  "property_details": {
+    "location": {
+      "singleLine": "4 Clifton Court Somers VIC 3927",
+      "councilArea": "Mornington Peninsula",
+      "councilAreaId": 566,
+      "state": "VIC",
+      "street": {
+        "id": 393925,
+        "singleLine": "Clifton Court Somers VIC 3927",
+        "name": "CLIFTON",
+        "nameAndNumber": "4 CLIFTON COURT ",
+        "extension": "COURT"
+      },
+      "postcode": {
+        "id": 201196,
+        "singleLine": "3927 VIC",
+        "name": "3927"
+      },
+      "locality": {
+        "id": 2572,
+        "singleLine": "Somers VIC 3927",
+        "name": "SOMERS"
+      },
+      "longitude": 145.17879372,
+      "latitude": -38.3931157,
+      "isDerivedUnit": false,
+      "startNumber": 4,
+      "isActiveProperty": true
+    },
+    "legal": {
+      "legal": {
+        "realPropertyDescription": "LOT 141 LP98160",
+        "frontage": 0.0,
+        "dateIssued": "2501"
+      },
+      "title": {
+        "titleIndicator": "No More Titles"
+      },
+      "parcels": [
+        {
+          "parcelId": 8138276,
+          "landAuthority": "Mornington Peninsula",
+          "plan": "98160",
+          "lot": "141",
+          "planType": "LP",
+          "area": "842 m\u00b2",
+          "isPrimaryPlan": true,
+          "displayValue": "141/LP98160",
+          "displayName": "Lot/Plan",
+          "jurisdictionId": "141/LP98160~////"
+        }
+      ],
+      "isActiveProperty": true
+    },
+    "site": {
+      "landUsePrimary": "Detached Dwelling",
+      "zoneCodeLocal": "GRZ1",
+      "zoneDescriptionLocal": "General Residential Zone - Schedule 1",
+      "siteValueList": [],
+      "isActiveProperty": true
+    },
+    "core_attributes": {
+      "isActiveProperty": true,
+      "propertyType": "HOUSE",
+      "propertySubType": "House: Standard",
+      "propertySubTypeShort": "Standard",
+      "beds": 4,
+      "baths": 3,
+      "carSpaces": 2,
+      "lockUpGarages": 0,
+      "landArea": 841,
+      "isCalculatedLandArea": true,
+      "landAreaSource": "Calculated"
+    },
+    "additional_attributes": {
+      "isActiveProperty": true,
+      "airConditioned": true,
+      "ductedHeating": true,
+      "ensuite": 1,
+      "fireplace": true,
+      "floorArea": 171,
+      "roofMaterial": "Concrete",
+      "wallMaterial": "Renderedbrick",
+      "yearBuilt": "1984"
+    },
+    "features": {
+      "features": [
+        "Beach Front",
+        "Open Plan",
+        "Scenic View"
+      ],
+      "featureAttributes": [
+        {
+          "name": "Building Area",
+          "value": "20.02",
+          "type": "Float"
+        },
+        {
+          "name": "Development Zone",
+          "value": "General Residential Zone - Schedule 1",
+          "type": "String"
+        },
+        {
+          "name": "Family / Rumpus Rooms",
+          "value": "1",
+          "type": "Integer"
+        },
+        {
+          "name": "Lounge Rooms",
+          "value": "2",
+          "type": "Integer"
+        },
+        {
+          "name": "Lounge/Dining Rooms Combined",
+          "value": "1",
+          "type": "Integer"
+        },
+        {
+          "name": "Property Improvements",
+          "value": "Brick",
+          "type": "String"
+        }
+      ],
+      "isActiveProperty": true
+    },
+    "occupancy": {
+      "occupancyType": "Owner Occupied",
+      "confidenceScore": "Low",
+      "isActiveProperty": true
+    },
+    "last_sale": {
+      "lastSale": {
+        "agencyName": "The Coast Real Estate",
+        "agentName": "Andrew Wright",
+        "contractDate": "2024-10-29",
+        "isAgentsAdvice": false,
+        "isDerivedAgency": true,
+        "isDerivedAgent": true,
+        "isReaRecentSale": false,
+        "isPriceWithheld": false,
+        "price": 1665000,
+        "settlementDate": "2025-01-15",
+        "transferId": 51509102,
+        "type": "Unknown",
+        "landUsePrimary": "Detached Dwelling",
+        "zoneCodeLocal": "GRZ1",
+        "zoneDescriptionLocal": "General Residential Zone - Schedule 1",
+        "saleMethod": "Private Treaty",
+        "isStandardTransfer": true,
+        "isArmsLength": true,
+        "isMultiSale": false
+      },
+      "isActiveProperty": true
+    },
+    "sales": {
+      "saleList": [
+        {
+          "agencyName": "The Coast Real Estate",
+          "agentName": "Andrew Wright",
+          "contractDate": "2024-10-29",
+          "isAgentsAdvice": false,
+          "isDerivedAgency": true,
+          "isDerivedAgent": true,
+          "isReaRecentSale": false,
+          "isPriceWithheld": false,
+          "price": 1665000,
+          "settlementDate": "2025-01-15",
+          "transferId": 51509102,
+          "type": "Unknown",
+          "landUsePrimary": "Detached Dwelling",
+          "zoneCodeLocal": "GRZ1",
+          "zoneDescriptionLocal": "General Residential Zone - Schedule 1",
+          "saleMethod": "Private Treaty",
+          "isStandardTransfer": true,
+          "isArmsLength": true,
+          "isMultiSale": false
+        },
+        {
+          "agencyName": "Somers Real Estate",
+          "agentName": "Elizabeth Wall",
+          "contractDate": "2005-02-01",
+          "isAgentsAdvice": false,
+          "isDerivedAgency": true,
+          "isDerivedAgent": true,
+          "isReaRecentSale": false,
+          "isPriceWithheld": false,
+          "price": 412000,
+          "settlementDate": "2005-04-29",
+          "transferId": 39571618,
+          "type": "Unknown",
+          "isStandardTransfer": true,
+          "isArmsLength": true,
+          "isMultiSale": false
+        },
+        {
+          "contractDate": "2000-06-14",
+          "isAgentsAdvice": false,
+          "isReaRecentSale": false,
+          "isPriceWithheld": false,
+          "price": 215000,
+          "settlementDate": "2000-08-11",
+          "transferId": 37772270,
+          "type": "Unknown",
+          "isStandardTransfer": true,
+          "isArmsLength": true,
+          "isMultiSale": false
+        },
+        {
+          "contractDate": "1984-12-04",
+          "isAgentsAdvice": false,
+          "isReaRecentSale": false,
+          "isPriceWithheld": false,
+          "price": 20000,
+          "settlementDate": "1985-03-19",
+          "transferId": 40670984,
+          "type": "Unknown",
+          "isStandardTransfer": true,
+          "isArmsLength": true,
+          "isMultiSale": false
+        }
+      ],
+      "isActiveProperty": true
+    },
+    "rent campaigns": {
+      "error": "No data available"
+    },
+    "advertisements": {
+      "messages": [
+        {
+          "code": 402,
+          "message": "No data found for your search.",
+          "type": "INFORMATION"
+        }
+      ],
+      "systemInfo": {
+        "instanceName": "32:8080",
+        "requestDate": "2025-11-09T06:39:11.770Z"
+      }
+    },
+    "timeline": {
+      "eventTimeline": [
+        {
+          "type": "sale",
+          "date": "2024-10-29",
+          "detail": {
+            "agency": "The Coast Real Estate",
+            "agent": "Andrew Wright",
+            "daysOnMarket": 28,
+            "isAgentAdvice": false,
+            "type": "Unknown",
+            "isPriceWithheld": false,
+            "priceDescription": "$1,665,000",
+            "saleMethod": "Private Treaty"
+          }
+        },
+        {
+          "type": "sale",
+          "date": "2005-02-01",
+          "detail": {
+            "agency": "Somers Real Estate",
+            "agent": "Elizabeth Wall",
+            "daysOnMarket": 191,
+            "isAgentAdvice": false,
+            "type": "Unknown",
+            "isPriceWithheld": false,
+            "priceDescription": "$412,000"
+          }
+        },
+        {
+          "type": "otmForSaleCampaignEnd",
+          "date": "2005-01-17",
+          "detail": {
+            "agency": "SOMERS REAL ESTATE",
+            "agent": "WALL ELIZABETH",
+            "daysOnMarket": 176,
+            "method": "Private Treaty"
+          }
+        },
+        {
+          "type": "otmForSaleCampaignStart",
+          "date": "2004-07-26",
+          "detail": {
+            "agency": "SOMERS REAL ESTATE",
+            "agent": "WALL ELIZABETH",
+            "daysOnMarket": 176,
+            "method": "Private Treaty"
+          }
+        },
+        {
+          "type": "sale",
+          "date": "2000-06-14",
+          "detail": {
+            "isAgentAdvice": false,
+            "type": "Unknown",
+            "isPriceWithheld": false,
+            "priceDescription": "$215,000"
+          }
+        },
+        {
+          "type": "otmForSaleCampaignEnd",
+          "date": "2000-03-11",
+          "detail": {
+            "agency": "BALNARRING",
+            "daysOnMarket": 106,
+            "method": "Private Treaty"
+          }
+        },
+        {
+          "type": "otmForSaleCampaignStart",
+          "date": "1999-11-27",
+          "detail": {
+            "agency": "BALNARRING",
+            "daysOnMarket": 106,
+            "method": "Private Treaty"
+          }
+        },
+        {
+          "type": "sale",
+          "date": "1984-12-04",
+          "detail": {
+            "isAgentAdvice": false,
+            "type": "Unknown",
+            "isPriceWithheld": false,
+            "priceDescription": "$20,000"
+          }
+        }
+      ]
+    }
+  },
+  "sales_history": [
+    {
+      "saleList": [
+        {
+          "agencyName": "The Coast Real Estate",
+          "agentName": "Andrew Wright",
+          "contractDate": "2024-10-29",
+          "isAgentsAdvice": false,
+          "isDerivedAgency": true,
+          "isDerivedAgent": true,
+          "isReaRecentSale": false,
+          "isPriceWithheld": false,
+          "price": 1665000,
+          "settlementDate": "2025-01-15",
+          "transferId": 51509102,
+          "type": "Unknown",
+          "landUsePrimary": "Detached Dwelling",
+          "zoneCodeLocal": "GRZ1",
+          "zoneDescriptionLocal": "General Residential Zone - Schedule 1",
+          "saleMethod": "Private Treaty",
+          "isStandardTransfer": true,
+          "isArmsLength": true,
+          "isMultiSale": false
+        },
+        {
+          "agencyName": "Somers Real Estate",
+          "agentName": "Elizabeth Wall",
+          "contractDate": "2005-02-01",
+          "isAgentsAdvice": false,
+          "isDerivedAgency": true,
+          "isDerivedAgent": true,
+          "isReaRecentSale": false,
+          "isPriceWithheld": false,
+          "price": 412000,
+          "settlementDate": "2005-04-29",
+          "transferId": 39571618,
+          "type": "Unknown",
+          "isStandardTransfer": true,
+          "isArmsLength": true,
+          "isMultiSale": false
+        },
+        {
+          "contractDate": "2000-06-14",
+          "isAgentsAdvice": false,
+          "isReaRecentSale": false,
+          "isPriceWithheld": false,
+          "price": 215000,
+          "settlementDate": "2000-08-11",
+          "transferId": 37772270,
+          "type": "Unknown",
+          "isStandardTransfer": true,
+          "isArmsLength": true,
+          "isMultiSale": false
+        },
+        {
+          "contractDate": "1984-12-04",
+          "isAgentsAdvice": false,
+          "isReaRecentSale": false,
+          "isPriceWithheld": false,
+          "price": 20000,
+          "settlementDate": "1985-03-19",
+          "transferId": 40670984,
+          "type": "Unknown",
+          "isStandardTransfer": true,
+          "isArmsLength": true,
+          "isMultiSale": false
+        }
+      ],
+      "isActiveProperty": true
+    }
+  ],
+  "median_avm": {
+    "error": "No median AVM data available"
+  },
+  "market_metrics_summary": {
+    "availability": {
+      "sales_volume": {
+        "available": false,
+        "description": "Sales Volume",
+        "reason": "No data returned from API"
+      },
+      "median_sale_price": {
+        "available": false,
+        "description": "Median Sale Price",
+        "reason": "No data returned from API"
+      },
+      "median_value": {
+        "available": false,
+        "description": "Median Value",
+        "reason": "No data returned from API"
+      },
+      "vendor_discount": {
+        "available": false,
+        "description": "Median Vendor Discount",
+        "reason": "No data returned from API"
+      },
+      "total_listings": {
+        "available": false,
+        "description": "Total Listings",
+        "reason": "No data returned from API"
+      },
+      "days_on_market": {
+        "available": false,
+        "description": "Median Days on Market",
+        "reason": "No data returned from API"
+      },
+      "rental_yield": {
+        "available": false,
+        "description": "Rental Yield",
+        "reason": "No data returned from API"
+      },
+      "median_rent": {
+        "available": false,
+        "description": "Median Asking Rent",
+        "reason": "No data returned from API"
+      }
+    },
+    "featured_metrics": {},
+    "summary": {
+      "total_metrics": 8,
+      "available_metrics": 0,
+      "unavailable_metrics": 8
+    }
+  },
+  "indexation": {
+    "status": "not_performed",
+    "reason": "Missing required data: no AVM time series"
+  }
+}

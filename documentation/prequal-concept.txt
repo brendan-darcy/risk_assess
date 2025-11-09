@@ -1,0 +1,37 @@
+## Backkground
+
+We want to be able to generate sample data to demostrate prequalify features for our product. It has two parts:
+- data Collection
+- classification and scoring
+
+
+Pre-Qualify – Data Collection
+At the time of instruction, ARMATech automatically gathers and links property data and imagery to the backend database using the property address. This process references external APIs and locally hosted data from the Apprise Master Address File (MAF) to build a comprehensive property record.
+The data is processed and categorised into structured fields, so it can be used in downstream processes. Data collected includes:
+•	Instructions: Client identity, property address, estimate, job type,  parties, and comments.
+•	Location and Administrative: Local government authority, geographic coordinates, and surrounding area context.
+•	Mapping and Topography: Geocoding, boundary geometry, elevation, slope, property type, and proximity to value drivers or blights.
+•	Legal: Property’s formal identity including title information and land authority references.
+•	Characteristics: Property type, form, key attributes such as room counts (bed, bath, living), car spaces, building dimensions, layout, construction era, and notable features.
+•	Occupancy: How the property is being used, zoning, planning, and development applications.
+•	Local Market: Sales and rental data, including time series for median prices, sales value and distribution, discounting, yields, and matched pairs of sales within a development.
+•	Transaction History: Sales history of the subject property.
+•	Campaigns: Historical and current marketing campaigns with timelines and advertising extracts.
+•	Sales Evidence: Comparable sales in the property’s precinct.
+
+
+Pre-Qualify – Classification and Scoring
+Apprise’s data science team has developed a range of predictive scores and Computer Vision models. These proprietary models and algorithms are all hosted locally in our own secure environments and are applied to the subject property to be valued, and the possible sales evidence, all at the time of instruction.
+
+Has 6 compoennts:
+Imagery tgging and scores
+Market scores
+Natural Language processing
+Complexity
+Perils
+Risks
+
+Step 1
+use the APIs in this to get all the infromation available for data collection that we can get for an address:
+
+Step 2 - await further sintructions

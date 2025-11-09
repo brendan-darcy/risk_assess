@@ -13,14 +13,11 @@ Usage:
 import argparse
 import json
 import sys
-from pathlib import Path
 
-# Add pipelines directory to path
-sys.path.append(str(Path(__file__).parent.parent / 'pipelines'))
-
-from property_data_processor import PropertyDataProcessor
-from geospatial_api_client import GeospatialAPIClient
-from pipeline_utils import ProgressReporter
+# Import from utils subdirectory
+from utils.property_data_processor import PropertyDataProcessor
+from utils.geospatial_api_client import GeospatialAPIClient
+from utils.pipeline_utils import ProgressReporter
 
 
 def main():

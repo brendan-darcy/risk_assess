@@ -20,8 +20,9 @@ import json
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple
 import geopandas as gpd
-from shapely.geometry import Point
+from shapely.geometry import Point, shape
 import pandas as pd
+import numpy as np
 
 
 class MeshBlockAnalysisPipeline:
@@ -55,6 +56,7 @@ class MeshBlockAnalysisPipeline:
 
         self.mesh_blocks_gdf: Optional[gpd.GeoDataFrame] = None
         self.property_gdf: Optional[gpd.GeoDataFrame] = None
+        self.property_boundary_gdf: Optional[gpd.GeoDataFrame] = None
         self.property_meshblock: Optional[gpd.GeoDataFrame] = None
         self.nearby_meshblocks: Optional[gpd.GeoDataFrame] = None
 
@@ -123,13 +125,13 @@ class MeshBlockAnalysisPipeline:
 
         # Import here to avoid circular dependency
         if property_processor is None:
-            from pipelines.property_data_processor import PropertyDataProcessor
-            from pipelines.pipeline_utils import ProgressReporter
+            from utils.property_data_processor import PropertyDataProcessor
+            from utils.pipeline_utils import ProgressReporter
             reporter = ProgressReporter("Property Lookup")
             property_processor = PropertyDataProcessor(reporter=reporter)
 
         if geo_client is None:
-            from pipelines.geospatial_api_client import GeospatialAPIClient
+            from utils.geospatial_api_client import GeospatialAPIClient
             geo_client = GeospatialAPIClient.from_env()
 
         # Get property ID from address if needed
@@ -167,6 +169,71 @@ class MeshBlockAnalysisPipeline:
         )
 
         return gdf, property_info
+
+    def load_property_boundary(
+        self,
+        property_id: int,
+        geo_client=None
+    ) -> gpd.GeoDataFrame:
+        """
+        Load property boundary polygon from CoreLogic Geospatial API.
+
+        Args:
+            property_id: CoreLogic property ID
+            geo_client: GeospatialAPIClient instance (created if None)
+
+        Returns:
+            GeoDataFrame with property boundary polygon
+
+        Raises:
+            RuntimeError: If property boundary not available
+        """
+        if geo_client is None:
+            from utils.geospatial_api_client import GeospatialAPIClient
+            geo_client = GeospatialAPIClient.from_env()
+
+        print(f"📐 Fetching property boundary for property {property_id}...")
+
+        try:
+            parcel_data = geo_client.get_parcel_polygon(str(property_id))
+
+            if 'features' not in parcel_data or len(parcel_data['features']) == 0:
+                raise RuntimeError(f"No boundary polygon found for property {property_id}")
+
+            feature = parcel_data['features'][0]
+            geometry_dict = feature.get('geometry', {})
+
+            # Convert ESRI JSON geometry to shapely geometry
+            geom = shape(geometry_dict)
+
+            # Get spatial reference (should be WGS84 from API)
+            sr = parcel_data.get('spatialReference', {})
+
+            # Create GeoDataFrame
+            self.property_boundary_gdf = gpd.GeoDataFrame(
+                {
+                    'property_id': [property_id],
+                    'area': [geom.area]
+                },
+                geometry=[geom],
+                crs='EPSG:4326'  # CoreLogic API returns WGS84
+            )
+
+            # Reproject to match mesh blocks CRS
+            if self.mesh_blocks_gdf is not None:
+                self.property_boundary_gdf = self.property_boundary_gdf.to_crs(
+                    self.mesh_blocks_gdf.crs
+                )
+
+            print(f"✅ Property boundary loaded")
+            print(f"   Boundary area: {self.property_boundary_gdf['area'].iloc[0]:.6f} sq degrees")
+
+            return self.property_boundary_gdf
+
+        except Exception as e:
+            print(f"⚠️  Could not load property boundary: {e}")
+            print("   Distance calculations will use property point instead")
+            return None
 
     def create_property_gdf(
         self,
@@ -286,10 +353,83 @@ class MeshBlockAnalysisPipeline:
 
         return self.nearby_meshblocks
 
+    def calculate_boundary_distances(self) -> gpd.GeoDataFrame:
+        """
+        Calculate minimum distance from property boundary to all non-residential mesh blocks.
+
+        Filters for non-residential mesh blocks (excluding 'Residential' category) and
+        calculates the minimum distance from the property boundary to each mesh block.
+
+        Returns:
+            GeoDataFrame of mesh blocks with distance column added
+
+        Note:
+            - If property boundary is not available, uses property point instead
+            - Distances calculated in metric CRS (meters)
+            - Only calculates for mesh blocks within the buffer radius
+        """
+        if self.nearby_meshblocks is None:
+            raise ValueError("Must find nearby mesh blocks first")
+
+        # Filter for non-residential mesh blocks
+        non_residential = self.nearby_meshblocks[
+            self.nearby_meshblocks['MB_CAT21'] != 'Residential'
+        ].copy()
+
+        print("=" * 60)
+        print("📏 CALCULATING DISTANCES TO NON-RESIDENTIAL MESH BLOCKS")
+        print("=" * 60)
+        print(f"Total nearby mesh blocks: {len(self.nearby_meshblocks)}")
+        print(f"Non-residential mesh blocks: {len(non_residential)}")
+
+        if len(non_residential) == 0:
+            print("⚠️  No non-residential mesh blocks found in radius")
+            return non_residential
+
+        # Use boundary if available, otherwise use point
+        if self.property_boundary_gdf is not None and not self.property_boundary_gdf.empty:
+            print("Using property boundary for distance calculations")
+            # Convert boundary to metric CRS
+            boundary_metric = self.property_boundary_gdf.to_crs(self.metric_crs)
+            reference_geom = boundary_metric.geometry.iloc[0]
+        elif self.property_gdf is not None:
+            print("⚠️  Property boundary not available, using property point")
+            # Convert point to metric CRS
+            point_metric = self.property_gdf.to_crs(self.metric_crs)
+            reference_geom = point_metric.geometry.iloc[0]
+        else:
+            raise ValueError("No property data available for distance calculation")
+
+        # Calculate minimum distance from boundary/point to each mesh block
+        # Note: nearby_meshblocks is already in metric CRS from find_nearby_meshblocks
+        distances = []
+        for idx, row in non_residential.iterrows():
+            mesh_geom = row.geometry
+            # Calculate minimum distance between geometries
+            distance = reference_geom.distance(mesh_geom)
+            distances.append(distance)
+
+        non_residential['distance_to_property_m'] = distances
+
+        # Sort by distance
+        non_residential = non_residential.sort_values('distance_to_property_m')
+
+        print("\n✅ Distance calculations complete")
+        print(f"   Minimum distance: {non_residential['distance_to_property_m'].min():.2f}m")
+        print(f"   Maximum distance: {non_residential['distance_to_property_m'].max():.2f}m")
+        print(f"   Mean distance: {non_residential['distance_to_property_m'].mean():.2f}m")
+
+        print("\nTop 5 closest non-residential mesh blocks:")
+        for idx, row in non_residential.head(5).iterrows():
+            print(f"   {row['MB_CAT21']:20s} - {row['distance_to_property_m']:7.2f}m - {row['MB_CODE21']}")
+
+        return non_residential
+
     def export_results(
         self,
         output_dir: str,
-        prefix: str = "meshblocks"
+        prefix: str = "meshblocks",
+        non_residential_distances: Optional[gpd.GeoDataFrame] = None
     ) -> Dict[str, str]:
         """
         Export nearby mesh blocks to multiple formats.
@@ -297,6 +437,7 @@ class MeshBlockAnalysisPipeline:
         Args:
             output_dir: Directory for output files
             prefix: Filename prefix (default: "meshblocks")
+            non_residential_distances: Optional GeoDataFrame with distance calculations
 
         Returns:
             Dictionary mapping format to output path
@@ -351,7 +492,26 @@ class MeshBlockAnalysisPipeline:
         output_files['txt'] = str(txt_path)
         print(f"✅ Text file: {txt_path}")
 
-        print(f"\n📊 Exported {len(self.nearby_meshblocks)} mesh blocks")
+        # 5. Export non-residential distances if provided
+        if non_residential_distances is not None and len(non_residential_distances) > 0:
+            # Convert to output CRS
+            distances_output = non_residential_distances.to_crs(self.output_crs)
+
+            # GeoJSON with distances
+            distances_geojson_path = output_path / f"{prefix}_nonresidential_distances_{self.buffer_distance}m.geojson"
+            distances_output.to_file(distances_geojson_path, driver='GeoJSON')
+            output_files['distances_geojson'] = str(distances_geojson_path)
+            print(f"✅ Non-residential distances GeoJSON: {distances_geojson_path}")
+
+            # CSV with distances (sorted by distance)
+            distances_csv_path = output_path / f"{prefix}_nonresidential_distances_{self.buffer_distance}m.csv"
+            distances_output.drop(columns='geometry').to_csv(distances_csv_path, index=False)
+            output_files['distances_csv'] = str(distances_csv_path)
+            print(f"✅ Non-residential distances CSV: {distances_csv_path}")
+
+            print(f"\n📊 Exported {len(non_residential_distances)} non-residential mesh blocks with distances")
+
+        print(f"\n📊 Exported {len(self.nearby_meshblocks)} total mesh blocks")
 
         return output_files
 
@@ -387,7 +547,8 @@ class MeshBlockAnalysisPipeline:
         output_dir: str,
         parcel_json_path: Optional[str] = None,
         address: Optional[str] = None,
-        property_id: Optional[int] = None
+        property_id: Optional[int] = None,
+        calculate_distances: bool = True
     ) -> Dict[str, Any]:
         """
         Run complete mesh block analysis workflow.
@@ -397,6 +558,7 @@ class MeshBlockAnalysisPipeline:
             parcel_json_path: Path to parcel.json with property data (optional)
             address: Property address (optional, fetches from CoreLogic)
             property_id: CoreLogic property ID (optional)
+            calculate_distances: Whether to calculate distances to non-residential mesh blocks (default: True)
 
         Returns:
             Dictionary with analysis results and output paths
@@ -408,6 +570,7 @@ class MeshBlockAnalysisPipeline:
         self.load_mesh_blocks()
 
         # Load property data
+        actual_property_id = property_id
         if parcel_json_path:
             self.load_property_from_parcel(parcel_json_path)
             property_info = None
@@ -416,22 +579,46 @@ class MeshBlockAnalysisPipeline:
                 address=address,
                 property_id=property_id
             )
+            actual_property_id = property_info['property_id']
         else:
             raise ValueError("Must provide parcel_json_path, address, or property_id")
+
+        # Load property boundary if we have a property ID
+        if actual_property_id and calculate_distances:
+            self.load_property_boundary(actual_property_id)
 
         # Analysis
         property_mb = self.identify_property_meshblock()
         self.find_nearby_meshblocks()
 
+        # Calculate distances to non-residential mesh blocks
+        non_residential_distances = None
+        if calculate_distances:
+            non_residential_distances = self.calculate_boundary_distances()
+
         # Export
-        output_files = self.export_results(output_dir)
+        output_files = self.export_results(
+            output_dir,
+            non_residential_distances=non_residential_distances
+        )
 
         # Statistics
         stats = self.get_summary_statistics()
+
+        # Add distance statistics if available
+        if non_residential_distances is not None and len(non_residential_distances) > 0:
+            stats['non_residential_distances'] = {
+                'count': len(non_residential_distances),
+                'min_distance_m': float(non_residential_distances['distance_to_property_m'].min()),
+                'max_distance_m': float(non_residential_distances['distance_to_property_m'].max()),
+                'mean_distance_m': float(non_residential_distances['distance_to_property_m'].mean()),
+                'median_distance_m': float(non_residential_distances['distance_to_property_m'].median())
+            }
 
         return {
             'property_meshblock': property_mb,
             'property_info': property_info,
             'statistics': stats,
-            'output_files': output_files
+            'output_files': output_files,
+            'non_residential_distances': non_residential_distances
         }

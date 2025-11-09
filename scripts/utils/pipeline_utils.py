@@ -7,6 +7,7 @@ for authentication, API requests, data processing, file operations, and error ha
 
 Author: Market Analysis Pipeline
 Date: 2025-08-22
+Updated: 2025-11-09 - Enhanced with config, exceptions, and logging support
 """
 
 import json
@@ -15,6 +16,7 @@ import sys
 import time
 import requests
 import pandas as pd
+import logging
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Any, Optional, Union, Tuple
@@ -22,6 +24,18 @@ from abc import ABC, abstractmethod
 
 # Add pipelines to path for imports
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'pipelines'))
+
+# Import new utility modules
+try:
+    from pipelines.config import config as app_config
+    from pipelines.exceptions import (
+        RiskAssessmentError, PipelineError as NewPipelineError,
+        APIError, CoreLogicAPIError, DataLoadError
+    )
+    _HAS_NEW_MODULES = True
+except ImportError:
+    _HAS_NEW_MODULES = False
+    app_config = None
 
 
 class PipelineConfig:
@@ -74,60 +88,129 @@ class PipelineConfig:
 
 
 class ProgressReporter:
-    """Standardized progress reporting for all pipelines"""
-    
-    def __init__(self, title: str):
-        """Initialize with pipeline title"""
+    """
+    Standardized progress reporting for all pipelines.
+
+    Provides both console output and optional file logging for all pipeline operations.
+    Supports different output modes and logging levels.
+    """
+
+    def __init__(self, title: str, enable_logging: bool = False, log_file: Optional[str] = None):
+        """
+        Initialize progress reporter.
+
+        Args:
+            title: Pipeline title for header display
+            enable_logging: Enable file logging (default: False)
+            log_file: Path to log file (default: data/logs/{title}.log)
+        """
         self.title = title
         self.start_time = datetime.now()
-        
+        self.enable_logging = enable_logging
+        self.logger = None
+
+        if enable_logging:
+            self._setup_logging(log_file)
+
+    def _setup_logging(self, log_file: Optional[str] = None):
+        """Setup file logging"""
+        if log_file is None:
+            # Use default log directory from config if available
+            if app_config:
+                log_dir = app_config.paths.logs_dir
+            else:
+                log_dir = Path('data/logs')
+
+            log_dir.mkdir(parents=True, exist_ok=True)
+            log_file = log_dir / f"{self.title.replace(' ', '_').lower()}.log"
+
+        self.logger = logging.getLogger(self.title)
+        self.logger.setLevel(logging.INFO)
+
+        # File handler
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setLevel(logging.INFO)
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
+        file_handler.setFormatter(formatter)
+        self.logger.addHandler(file_handler)
+
+    def _log(self, level: str, message: str):
+        """Log message to file if logging is enabled"""
+        if self.logger:
+            log_func = getattr(self.logger, level.lower(), self.logger.info)
+            # Strip emoji from log messages
+            clean_message = message.replace('✅', '').replace('❌', '').replace('⚠️', '').replace('📊', '').replace('📁', '').replace('⏱️', '').replace('🏁', '').strip()
+            log_func(clean_message)
+
     def print_header(self):
         """Print pipeline header"""
         print("=" * 70)
         print(self.title)
         print("=" * 70)
         print(f"Started at: {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
-    
+        self._log('info', f"Pipeline started: {self.title}")
+
     def print_step(self, step_number: int, step_name: str):
         """Print step header"""
         print(f"\n" + "=" * 50)
         print(f"STEP {step_number}: {step_name}")
         print("=" * 50)
-    
+        self._log('info', f"Step {step_number}: {step_name}")
+
     def success(self, message: str):
         """Print success message"""
         print(f"✅ {message}")
-    
+        self._log('info', message)
+
     def error(self, message: str):
         """Print error message"""
         print(f"❌ {message}")
-    
+        self._log('error', message)
+
     def warning(self, message: str):
         """Print warning message"""
         print(f"⚠️  {message}")
-    
+        self._log('warning', message)
+
     def info(self, message: str):
         """Print info message"""
         print(f"📊 {message}")
-    
+        self._log('info', message)
+
     def file_info(self, message: str):
         """Print file-related message"""
         print(f"📁 {message}")
-    
+        self._log('info', message)
+
+    def debug(self, message: str):
+        """Print debug message (only to log file, not console)"""
+        if self.logger:
+            self.logger.debug(message)
+
     def print_summary(self, **kwargs):
         """Print final summary"""
         end_time = datetime.now()
         duration = end_time - self.start_time
-        
+
         print(f"\n" + "=" * 50)
         print("PIPELINE COMPLETE")
         print("=" * 50)
-        
+
+        summary_parts = []
         for key, value in kwargs.items():
-            print(f"✅ {key.replace('_', ' ').title()}: {value}")
-        
+            display_key = key.replace('_', ' ').title()
+            print(f"✅ {display_key}: {value}")
+            summary_parts.append(f"{display_key}: {value}")
+
         print(f"⏱️  Duration: {duration.total_seconds():.1f} seconds")
         print(f"🏁 Completed at: {end_time.strftime('%Y-%m-%d %H:%M:%S')}")
+
+        # Log summary
+        self._log('info', f"Pipeline completed. Duration: {duration.total_seconds():.1f}s")
+        for part in summary_parts:
+            self._log('info', part)
 
 
 class FileManager:
@@ -201,15 +284,27 @@ class FileManager:
 
 
 class PipelineError(Exception):
-    """Custom exception for pipeline errors"""
-    
-    def __init__(self, message: str, step: Optional[str] = None, 
+    """
+    Custom exception for pipeline errors.
+
+    DEPRECATED: Use pipelines.exceptions.PipelineError instead.
+    This class is maintained for backward compatibility only.
+    """
+
+    def __init__(self, message: str, step: Optional[str] = None,
                  cause: Optional[Exception] = None):
-        """Initialize with message, optional step name and cause"""
+        """
+        Initialize with message, optional step name and cause.
+
+        Args:
+            message: Error message
+            step: Optional step name where error occurred
+            cause: Optional underlying exception
+        """
         self.step = step
         self.cause = cause
         super().__init__(message)
-    
+
     def __str__(self):
         """String representation with step information"""
         base_msg = super().__str__()
@@ -408,66 +503,139 @@ class CoreLogicAPIClient:
         self.session = requests.Session()
         self.session.headers.update(self.headers)
     
-    def make_request(self, endpoint: str, params: dict = None, method: str = 'GET', 
-                    payload: dict = None, retry_count: int = 3, delay: float = 0.1, 
-                    debug: bool = False) -> Optional[dict]:
-        """Enhanced API request with comprehensive error handling and retries"""
+    def make_request(self, endpoint: str, params: dict = None, method: str = 'GET',
+                    payload: dict = None, retry_count: int = 3, delay: float = 0.1,
+                    debug: bool = False, reporter: Optional[ProgressReporter] = None,
+                    raise_on_error: bool = False) -> Optional[dict]:
+        """
+        Enhanced API request with comprehensive error handling and retries.
+
+        Args:
+            endpoint: API endpoint path
+            params: Query parameters
+            method: HTTP method (GET or POST)
+            payload: Request payload for POST requests
+            retry_count: Number of retry attempts
+            delay: Delay between retries in seconds
+            debug: Enable debug output
+            reporter: Optional ProgressReporter for logging
+            raise_on_error: Raise CoreLogicAPIError instead of returning None
+
+        Returns:
+            Response JSON dict or None on failure
+
+        Raises:
+            CoreLogicAPIError: If raise_on_error=True and request fails
+        """
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
-        
+
         if debug:
-            print(f"🔍 API Request: {method} {url}")
+            msg = f"API Request: {method} {url}"
+            if reporter:
+                reporter.debug(msg)
+            else:
+                print(f"🔍 {msg}")
             if payload:
                 print(f"🔍 Payload: {payload}")
             if params:
                 print(f"🔍 Params: {params}")
-        
+
+        last_error = None
         for attempt in range(retry_count):
             try:
                 if delay > 0:
                     time.sleep(delay)
-                
+
                 if method.upper() == 'GET':
                     response = self.session.get(url, params=params, timeout=30)
                 else:
                     response = self.session.post(url, json=payload, timeout=30)
-                
+
                 if response.status_code == 200:
                     return response.json()
                 elif response.status_code == 401:
-                    print(f"❌ Authentication failed - check credentials")
+                    error_msg = "Authentication failed - check credentials"
+                    if reporter:
+                        reporter.error(error_msg)
+                    else:
+                        print(f"❌ {error_msg}")
+
+                    if raise_on_error and _HAS_NEW_MODULES:
+                        raise CoreLogicAPIError(error_msg, status_code=401)
                     return None
                 elif response.status_code == 429:
-                    wait_time = delay * (2 ** attempt)  # Exponential backoff for rate limiting
-                    print(f"⚠️ Rate limited (attempt {attempt + 1}/{retry_count}), waiting {wait_time:.1f}s")
+                    wait_time = delay * (2 ** attempt)  # Exponential backoff
+                    warn_msg = f"Rate limited (attempt {attempt + 1}/{retry_count}), waiting {wait_time:.1f}s"
+                    if reporter:
+                        reporter.warning(warn_msg)
+                    else:
+                        print(f"⚠️  {warn_msg}")
                     time.sleep(wait_time)
                     continue
                 else:
                     error_msg = f"HTTP {response.status_code}: {response.text[:200]}"
+                    last_error = error_msg
                     if attempt < retry_count - 1:
-                        print(f"⚠️ Request failed (attempt {attempt + 1}/{retry_count}): {error_msg}")
+                        warn_msg = f"Request failed (attempt {attempt + 1}/{retry_count}): {error_msg}"
+                        if reporter:
+                            reporter.warning(warn_msg)
+                        else:
+                            print(f"⚠️  {warn_msg}")
                         time.sleep(delay * (attempt + 1))
                         continue
                     else:
-                        print(f"❌ API request failed after {retry_count} attempts: {error_msg}")
+                        final_msg = f"API request failed after {retry_count} attempts: {error_msg}"
+                        if reporter:
+                            reporter.error(final_msg)
+                        else:
+                            print(f"❌ {final_msg}")
+
+                        if raise_on_error and _HAS_NEW_MODULES:
+                            raise CoreLogicAPIError(final_msg,
+                                                   status_code=response.status_code,
+                                                   response_body=response.text)
                         return None
-            
+
             except requests.exceptions.Timeout:
                 if attempt < retry_count - 1:
-                    print(f"⚠️ Request timeout (attempt {attempt + 1}/{retry_count})")
+                    warn_msg = f"Request timeout (attempt {attempt + 1}/{retry_count})"
+                    if reporter:
+                        reporter.warning(warn_msg)
+                    else:
+                        print(f"⚠️  {warn_msg}")
                     time.sleep(delay * (attempt + 1))
                     continue
                 else:
-                    print(f"❌ API request timed out after {retry_count} attempts")
+                    error_msg = f"API request timed out after {retry_count} attempts"
+                    if reporter:
+                        reporter.error(error_msg)
+                    else:
+                        print(f"❌ {error_msg}")
+
+                    if raise_on_error and _HAS_NEW_MODULES:
+                        raise CoreLogicAPIError(error_msg, status_code=408)
                     return None
             except Exception as e:
+                last_error = str(e)
                 if attempt < retry_count - 1:
-                    print(f"⚠️ Request error (attempt {attempt + 1}/{retry_count}): {e}")
+                    warn_msg = f"Request error (attempt {attempt + 1}/{retry_count}): {e}"
+                    if reporter:
+                        reporter.warning(warn_msg)
+                    else:
+                        print(f"⚠️  {warn_msg}")
                     time.sleep(delay * (attempt + 1))
                     continue
                 else:
-                    print(f"❌ API request error after {retry_count} attempts: {e}")
+                    error_msg = f"API request error after {retry_count} attempts: {e}"
+                    if reporter:
+                        reporter.error(error_msg)
+                    else:
+                        print(f"❌ {error_msg}")
+
+                    if raise_on_error and _HAS_NEW_MODULES:
+                        raise CoreLogicAPIError(error_msg) from e
                     return None
-        
+
         return None
     
     def get_property_suggestions(self, address: str, limit: int = 3, offset: int = 0) -> List[dict]:
@@ -681,7 +849,7 @@ class AuthenticatedPipeline(BasePipeline):
     def _authenticate(self):
         """Authenticate with CoreLogic API"""
         try:
-            from corelogic_auth import CoreLogicAuth
+            from .corelogic_auth import CoreLogicAuth
             
             self.auth = CoreLogicAuth.from_env()
             # Always get a fresh token for each script run

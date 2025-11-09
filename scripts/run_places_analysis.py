@@ -13,11 +13,9 @@ import sys
 import argparse
 from pathlib import Path
 
-# Add pipelines to path
-sys.path.append(str(Path(__file__).parent.parent / 'pipelines'))
-
-from pipeline_utils import PipelineConfig, ProgressReporter, PipelineError
-from google_places_pipeline import GooglePlacesPipeline
+# Import from utils subdirectory
+from utils.pipeline_utils import PipelineConfig, ProgressReporter, PipelineError
+from utils.google_api_processor import GooglePlacesPipeline
 
 
 def main():

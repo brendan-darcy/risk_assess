@@ -1,6 +1,6 @@
 import requests
 from typing import Optional, Dict, Any, List
-from corelogic_auth import CoreLogicAuth
+from .corelogic_auth import CoreLogicAuth
 
 
 class GeospatialAPIClient(CoreLogicAuth):
@@ -190,21 +190,22 @@ class GeospatialAPIClient(CoreLogicAuth):
     def get_infrastructure_data(self, bbox: str, infrastructure_type: str, state: str = "nsw") -> requests.Response:
         """
         Get infrastructure overlay data.
-        
+
         Args:
             bbox: Bounding box coordinates
             infrastructure_type: Type of infrastructure (electricTransmissionLines, railway, etc.)
             state: State code (nsw, vic, qld, etc.)
-            
+
         Returns:
             Response containing infrastructure data
         """
         if infrastructure_type in ['streets', 'railway', 'railwayStations', 'ferry']:
             # These are national overlays
-            return self.export_map(f"overlays/{infrastructure_type}", bbox)
+            # Note: export_map already adds "overlays/" prefix, so just pass the layer name
+            return self.export_map(infrastructure_type, bbox)
         else:
             # State-specific infrastructure (like transmission lines)
-            return self.export_map(f"overlays/{infrastructure_type}", bbox)
+            return self.export_map(infrastructure_type, bbox)
     
     def query_infrastructure_features(self, property_id: str, infrastructure_type: str, state: str = "nsw") -> requests.Response:
         """
