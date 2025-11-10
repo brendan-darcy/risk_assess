@@ -57,3 +57,77 @@ ARMATech applies NLP techniques to analyse descriptions of the subject property,
 •	Dual Occupancy: Properties detected as likely having a second dwelling on title.
 •	Business Use: a business is operated at the property makes it difficult to sell as vacant possession.
 
+
+
+
+Appendix
+
+Tech Breakout – ARMATech Computer Vision Capability
+
+Overview
+
+Smart Gallery is powered by ARMATech’s proprietary Computer Vision Model - the only model of its kind to be trained specifically for valuations in Australia.
+
+Images are classified into fine-grained categories to identify the most valuable images. This assists the valuer in identifying the most relevant information for comparability. The result is a more robust selection of sales and a more accurate outcome.
+
+Model Layers
+
+Apprise Computer Vision follows a layered approach, two for classifying images and one for grading.
+
+
+
+
+
+Layer 1
+
+“High Level Classifications”	Layer 2
+
+“Granular Classifications”	Layer 3
+
+“Grading”
+Top level classification to identify broad grouping, and to select the correct Layer 2 Model (indoor or outdoor).	Detailed classification to identify precise grouping, and to identify the value driver images for Layer 3 grading.	Grading of important value-driver images. Each image is given an overall grade from 1 to 5, to enable valuers to filter more accurately and efficiently.
+Categories
+Indoor, Outdoor, Aerial, Floorplan, Under construction, Not a property image
+De-deduplication
+
+	Categories
+Indoor Model: Bathroom, Entrance, Garage/Shed, Kitchen, Laundry, Living space, Pool, Recreational room, Sauna, Wine cellar, Carport
+Outdoor Model: Frontage, Garage/Shed, Garden, Living space, Local or scenery image, Pool, Tennis court	Images for grading
+
+•	Kitchen
+•	Wet rooms – laundry & bathrooms
+•	Frontage
+
+In a typical job, ARMATech’s distributed computing architecture orchestrates model processing for over 5000 images in under two minutes, which the valuer can access in a locally on the browser in a low latency user experience.
+ 
+Classification – a major upgrade to standard desktops
+
+Classification is a powerful computer vision capability in ARMATech. The process turns unstructured data into structured data that can be more accurately and efficiently assessed. Traditional desktop tooling shows imagery in an unstructured order, and with many duplicates. This creates the risk that imagery that is tagged as recent is actually old, and also increases the chances of selecting imagery that does not reflect the current state of the property.
+
+Figure xx – Example of how classification improves filtering
+ 
+[Savannah – can we make this look better plese.]
+
+The above image demonstrates how ARMATech’s Computer Vision transforms desktop valuation workflows. In this example for the subject property, Apprise’s ARMATech Smart Gallery classifies 72 images from three campaigns, and produces cleaned, deduplicated, and tagged imagery.
+
+https://apprisers.sharepoint.com/:p:/r/sites/Technology/Shared%20Documents/Data%20Science/Analysis%20(ad%20hoc)/bd-slides-cv.pptx?d=w8bb87ef2025a4d818140e02b9f56b61b&csf=1&web=1&e=rUu7Cu
+
+
+Grading
+
+[Savannah – an intro to grading]
+
+Image xx – Example of Pre-Qualify Layer 3 Processing for Kitchens 
+
+The above image is an example of Computer Vision’s Layer 3 processing.
+o	Step 1 - Once Layer 2 processing is complete, we pass all images classified as ‘Kitchen’ into Layer 3.
+o	Step 2 - Computer Vision then assesses each image across a range of dimensions: cabinetry, appliances, tapware, benchtops, overall style coherence etc
+o	Step 3 – An overall Kitchen Grade is produced for each image
+
+
+In Summary
+
+ARMATech’s Computer Vision capability is a powerful AI model trained specifically for valuations and unique in the industry. Computer Vision is powerful because it enables valuers to efficiently identify and review the most relevant images that drive value and avoid erroneous conclusions that are common in standard desktop tooling.
+
+
+
