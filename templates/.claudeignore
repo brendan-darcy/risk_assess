@@ -1,0 +1,82 @@
+# Claude Code Ignore Patterns
+# Prevents Claude from accessing sensitive or unnecessary files
+
+# Security - Never expose credentials or secrets
+**/*.env
+**/.env.*
+!**/.env.example
+credentials.json
+secrets.json
+*.key
+*.pem
+*.p12
+*.pfx
+**/config/secrets.*
+
+# Data files - Prevent accidental data exposure
+**/*.csv
+**/*.xlsx
+**/*.xls
+**/data/**
+**/datasets/**
+**/exports/**
+
+# Large binaries and media
+**/*.zip
+**/*.tar
+**/*.tar.gz
+**/*.mp4
+**/*.mov
+**/*.pdf
+**/*.dmg
+
+# Dependencies
+node_modules/
+venv/
+env/
+__pycache__/
+*.pyc
+.Python
+pip-log.txt
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+.eggs/
+target/
+
+# IDE and system files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Version control
+.git/
+.svn/
+.hg/
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+tmp/
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Documentation builds (allow source docs)
+docs/_build/
+site/

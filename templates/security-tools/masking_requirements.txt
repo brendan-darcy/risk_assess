@@ -1,0 +1,5 @@
+# Requirements for mask_valuation_data.py
+# Apprise Risk Solutions - Data Masking Tool
+
+pandas>=2.0.0
+Faker>=20.0.0

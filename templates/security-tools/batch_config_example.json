@@ -1,0 +1,20 @@
+{
+  "files": [
+    {
+      "input": "personas_prototype.csv",
+      "output": "personas_prototype_masked.csv",
+      "description": "Main personas dataset with job IDs"
+    },
+    {
+      "input": "job_id_lookup.csv",
+      "output": "job_id_lookup_masked.csv",
+      "description": "Job ID lookup table"
+    },
+    {
+      "input": "raw_ext.csv",
+      "output": "raw_ext_masked.csv",
+      "description": "Raw extraction data with job_c column"
+    }
+  ],
+  "note": "This config ensures referential integrity across all three files by maintaining consistent job ID mappings"
+}

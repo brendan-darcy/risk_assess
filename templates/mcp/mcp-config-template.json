@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "groq": {
+      "command": "node",
+      "args": [
+        "/Users/YOUR_USERNAME/.claude/mcp-groq.js"
+      ],
+      "env": {
+        "GROQ_API_KEY": "${GROQ_API_KEY}"
+      }
+    }
+  }
+}

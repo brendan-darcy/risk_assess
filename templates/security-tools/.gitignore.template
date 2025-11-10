@@ -1,0 +1,537 @@
+# Apprise Risk Solutions - AI Approach Project
+# .gitignore - Security-Enhanced Version
+# Compliance: ISO 27001:2022, ISMS 3, ISMS 16, Apprise AI Usage Policy
+#
+# CRITICAL: This .gitignore protects sensitive client data from accidental commits
+# Review quarterly and update as project structure changes
+
+# ============================================================================
+# SECTION 1: SENSITIVE DATA FILES (CRITICAL - CLIENT INFORMATION)
+# ============================================================================
+#
+# These patterns prevent committing files that may contain:
+# - Client PII (names, emails, addresses, phone numbers)
+# - Property valuation data
+# - Borrower information
+# - Sales evidence data
+# - Financial information
+
+# CSV files (commonly contain valuation/survey data)
+*.csv
+
+# Excel files (valuation reports, client data)
+*.xlsx
+*.xls
+*.xlsm
+*.xlt*
+
+# Parquet files (big data formats)
+*.parquet
+
+# Pickle files (serialized Python objects, might contain data)
+*.pkl
+*.pickle
+
+# Data directories (all levels)
+data/
+**/data/**
+datasets/
+**/datasets/**
+
+# Project examples folder - CONTAINS REAL VALUATION DATA
+docs - project examples/
+"docs - project examples/"
+
+# Input/Output folders
+input/
+output/
+exports/
+imports/
+raw/
+raw_data/
+unmasked_data/
+
+# Client/PII directories
+client_data/
+pii/
+personal/
+borrower_data/
+valuation_data/
+sales_evidence/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+database/
+
+# JSON data files (API responses might contain client data)
+# Exclude data JSON but allow config JSON
+**/data/**/*.json
+**/responses/**/*.json
+**/exports/**/*.json
+
+# XML exports (might contain Salesforce data)
+**/exports/**/*.xml
+**/data/**/*.xml
+
+# Archives (might contain data exports)
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+*.DAT
+
+# ============================================================================
+# SECTION 2: CREDENTIALS & SECRETS (CRITICAL)
+# ============================================================================
+
+# Environment files
+.env
+.env.*
+.env.local
+.env.production
+.env.development
+.env.staging
+.env.test
+.env.backup
+**/.env
+**/.env.*
+
+# But allow example/template files
+!.env.example
+!.env.template
+!env.example
+!env.template
+
+# Credential files
+credentials.json
+credentials.yaml
+credentials.yml
+credentials.xml
+**/credentials/**
+**/secrets/**
+**/*_credentials.*
+**/*_secret.*
+**/secret_*
+secret_*
+
+# API keys and tokens
+**/api_keys/**
+*.key
+*.pem
+*.p12
+*.pfx
+*.cer
+*.crt
+
+# AWS credentials
+.aws/credentials
+.aws/config
+**/.aws/credentials
+
+# SSH keys
+**/.ssh/id_rsa
+**/.ssh/id_dsa
+**/.ssh/id_ecdsa
+**/.ssh/id_ed25519
+**/.ssh/*.pem
+
+# Cloud provider configs
+.gcloud/
+.azure/
+
+# Configuration with sensitive data
+config/secrets.json
+config/credentials.json
+**/config/production.json
+**/config/prod.json
+
+# ============================================================================
+# SECTION 3: SALESFORCE-SPECIFIC (APPRISE ARMATECH)
+# ============================================================================
+
+# SFDX
+.sfdx/
+.salesforce/
+.localdevserver/
+.sf/
+
+# Salesforce cache
+**/.sfdx/
+**/.salesforce/
+
+# Org-specific metadata (may contain production org IDs)
+**/config/*scratch-def.json
+
+# ============================================================================
+# SECTION 4: AWS & CLOUD-SPECIFIC (APPRISE ARMATECH)
+# ============================================================================
+
+# Terraform state (contains sensitive resource IDs)
+*.tfstate
+*.tfstate.backup
+.terraform/
+terraform.tfvars
+terraform.tfvars.json
+
+# CloudFormation
+**/cloudformation/prod/**
+**/cloudformation/production/**
+
+# SAM
+.aws-sam/
+samconfig.toml  # May contain account IDs
+
+# CDK
+.cdk.staging/
+cdk.out/
+
+# ============================================================================
+# SECTION 5: DATABRICKS-SPECIFIC (APPRISE ARMATECH)
+# ============================================================================
+
+# Databricks config (may contain workspace URLs and tokens)
+.databrickscfg
+**/.databrickscfg
+
+# Databricks bundles
+.databricks/
+
+# ============================================================================
+# SECTION 6: R-SPECIFIC (APPRISE DATA ANALYSIS)
+# ============================================================================
+
+# R
+.RData
+.Rhistory
+.Rproj.user
+*_cache/
+*.Rproj
+
+# ============================================================================
+# SECTION 7: MASKING & SECURITY ARTIFACTS
+# ============================================================================
+
+# Masking mappings (keep offline, DO NOT commit)
+masking_mappings.json
+*_mappings.json
+*_mapping.json
+valuer_mappings.json
+account_mappings.json
+
+# Security scan results
+security_scan_results/
+vulnerability_reports/
+pen_test_results/
+trivy-report.json
+snyk-report.json
+
+# ============================================================================
+# SECTION 8: BACKUPS & TEMPORARY FILES
+# ============================================================================
+
+# Backup files
+*.bak
+*.backup
+**/backups/**
+**/backup/**
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+**/tmp/**
+**/temp/**
+*.old
+*.orig
+*.rej
+
+# ============================================================================
+# SECTION 9: LOGS (MAY CONTAIN SENSITIVE DEBUG INFO)
+# ============================================================================
+
+# Log files
+*.log
+**/*.log
+logs/
+**/logs/**
+*.log.*
+
+# ============================================================================
+# SECTION 10: PYTHON-SPECIFIC
+# ============================================================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+#Pipfile.lock
+
+# poetry
+#poetry.lock
+poetry.toml
+
+# pdm
+.pdm.toml
+#pdm.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# ruff
+.ruff_cache/
+
+# LSP config files
+pyrightconfig.json
+
+# ============================================================================
+# SECTION 11: NODE.JS-SPECIFIC (IF APPLICABLE)
+# ============================================================================
+
+# Node modules
+node_modules/
+**/node_modules/**
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+.yarn/
+
+# Optional: Lock files (uncomment if you want to exclude)
+# package-lock.json
+# yarn.lock
+
+# ============================================================================
+# SECTION 12: IDE & EDITOR FILES
+# ============================================================================
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# IntelliJ / WebStorm / PyCharm
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.*.swp
+.*.swo
+
+# Emacs
+\#*\#
+.\#*
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# ============================================================================
+# SECTION 13: OPERATING SYSTEM FILES
+# ============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.directory
+
+# ============================================================================
+# SECTION 14: VERSION CONTROL
+# ============================================================================
+
+# Git
+.git/
+.gitignore_global
+
+# ============================================================================
+# SECTION 15: ALLOWED MASKED DATA (SAFE TO COMMIT)
+# ============================================================================
+
+# These are ALLOWED (negation patterns)
+# Masked data files are safe to commit
+!masked_*.csv
+!masked_*.json
+!synthetic_*.csv
+
+# Example/template files are safe
+!**/examples/**/*.example
+!**/*.template
+!**/test_data/**/*.csv  # Only if verified as dummy data
+
+# ============================================================================
+# SECTION 16: PROJECT-SPECIFIC CUSTOMIZATIONS
+# ============================================================================
+
+# Add any project-specific patterns below this line
+
+# Example:
+# apprise_internal/
+# legacy_data/
+# migration_scripts/prod/
+
+
+# ============================================================================
+# END OF .gitignore
+# ============================================================================
+#
+# VERIFICATION CHECKLIST:
+# ☐ Reviewed quarterly or when project structure changes
+# ☐ Tested with: git status --ignored
+# ☐ Verified sensitive files are excluded
+# ☐ Documented any project-specific additions
+#
+# MAINTENANCE:
+# - Update when new sensitive data sources added
+# - Review after major refactoring
+# - Coordinate with InfoSec on new patterns
+#
+# SUPPORT:
+# - Security questions: Contact InfoSec team
+# - .gitignore questions: See /templates/pt-team/security/
+# - Report issues: P&T Team Slack #engineering-ai-templates

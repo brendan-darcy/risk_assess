@@ -1,0 +1,43 @@
+# MCP configuration files with secrets
+.mcp.json
+.vscode/mcp.json
+
+# Claude Code local settings (may contain API keys or permissions)
+.claude/settings.local.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Node.js
+node_modules/
+package-lock.json
+
+# Data files
+*.csv
+*.xlsx
+*.xls
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+*.key
+*.pem
+.env
+.env.local
+credentials.json
+templates/
