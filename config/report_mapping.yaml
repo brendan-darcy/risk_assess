@@ -1,0 +1,241 @@
+# Property Report Mapping Configuration
+# Defines simple field mappings from JSON sources to PDF report
+
+categories:
+  - id: 1
+    name: "INSTRUCTIONS"
+    coverage: "0%"
+    subsections:
+      - name: "NOTE"
+        fields:
+          - label: "Coverage"
+            value: "0% - Not captured in source data"
+          - label: "[GAP] Note"
+            value: "This category is not present in the current data model"
+
+  - id: 2
+    name: "LOCATION AND ADMINISTRATIVE"
+    coverage: "100%"
+    subsections:
+      - name: "ADDRESS"
+        source: "property_details"
+        fields:
+          - label: "Full Address"
+            path: "address.singleLine"
+            fallback: "Unknown"
+          - label: "Street Number"
+            path: "address.streetNumber"
+            fallback: ""
+          - label: "Street Name"
+            path: "address.streetName"
+            fallback: ""
+          - label: "Suburb"
+            path: "address.suburb"
+            fallback: ""
+          - label: "State"
+            path: "address.state"
+            fallback: ""
+          - label: "Postcode"
+            path: "address.postcode"
+            fallback: ""
+
+      - name: "LOCATION"
+        source: "property_details"
+        fields:
+          - label: "Latitude"
+            path: "location.latitude"
+            fallback: "N/A"
+          - label: "Longitude"
+            path: "location.longitude"
+            fallback: "N/A"
+          - label: "Council Area"
+            path: "location.councilArea"
+            fallback: "N/A"
+          - label: "Electoral Division"
+            path: "location.electoralDivision"
+            fallback: "N/A"
+
+      - name: "STATISTICAL AREAS"
+        source: "mesh_block_data"
+        fields:
+          - label: "Statistical Area 1 (SA1)"
+            path: "sa1_code"
+            fallback: "Unknown"
+          - label: "Statistical Area 2 (SA2)"
+            path: "sa2_name"
+            fallback: "Unknown"
+          - label: "Mesh Block Code"
+            path: "mesh_block_code"
+            fallback: "Unknown"
+
+      - name: "PLANNING AND ZONING"
+        source: "property_details"
+        fields:
+          - label: "Zoning > Code"
+            path: "site.zoneCodeLocal"
+            fallback: "Unknown"
+          - label: "Zoning > Description"
+            path: "site.zoneDescriptionLocal"
+            fallback: "Unknown"
+        # Complex extractors for planning zones
+        custom_extractors:
+          - name: "planning_zone_section_1"
+          - name: "planning_zone_section_2"
+          - name: "planning_zone_opportunities"
+
+      - name: "DEVELOPMENT APPROVALS"
+        # Fully handled by custom extractor
+        custom_extractors:
+          - name: "development_approvals"
+
+  - id: 4
+    name: "LEGAL"
+    coverage: "100%"
+    subsections:
+      - name: "TITLE"
+        source: "property_details"
+        fields:
+          - label: "Title Type"
+            path: "title.titleType"
+            fallback: "N/A"
+          - label: "Certificate of Title"
+            path: "title.certificateOfTitle"
+            fallback: "N/A"
+          - label: "Tenure"
+            path: "title.tenure"
+            fallback: "N/A"
+          - label: "Title Search Date"
+            path: "title.titleSearchDate"
+            fallback: "N/A"
+
+      - name: "ENCUMBRANCES"
+        # Fully handled by custom extractor
+        custom_extractors:
+          - name: "encumbrances"
+
+  - id: 5
+    name: "CHARACTERISTICS"
+    coverage: "100%"
+    subsections:
+      - name: "SITE"
+        source: "property_details"
+        fields:
+          - label: "Land Area"
+            path: "site.area"
+            fallback: "N/A"
+            formatter: "area"
+          - label: "Frontage"
+            path: "site.frontage"
+            fallback: "N/A"
+          - label: "Depth"
+            path: "site.depth"
+            fallback: "N/A"
+
+      - name: "BUILDING"
+        source: "property_details"
+        fields:
+          - label: "Dwelling Type"
+            path: "building.dwellingType"
+            fallback: "N/A"
+          - label: "Bedrooms"
+            path: "building.bedrooms"
+            fallback: "N/A"
+          - label: "Bathrooms"
+            path: "building.bathrooms"
+            fallback: "N/A"
+          - label: "Parking Spaces"
+            path: "building.carSpaces"
+            fallback: "N/A"
+          - label: "Building Area"
+            path: "building.buildingArea"
+            fallback: "N/A"
+            formatter: "area"
+          - label: "Year Built"
+            path: "building.yearBuilt"
+            fallback: "N/A"
+
+      - name: "ELEVATION AND ORIENTATION"
+        # Handled by custom extractor
+        custom_extractors:
+          - name: "elevation_orientation"
+
+  - id: 6
+    name: "IMAGERY"
+    coverage: "100%"
+    # Fully handled by custom extractor
+    custom_extractors:
+      - name: "imagery"
+
+  - id: 7
+    name: "OCCUPANCY"
+    coverage: "75%"
+    subsections:
+      - name: "OCCUPANCY STATUS"
+        source: "property_details"
+        fields:
+          - label: "Occupancy Type"
+            path: "occupancy.type"
+            fallback: "N/A"
+
+  - id: 8
+    name: "LOCAL MARKET"
+    coverage: "50%"
+    subsections:
+      - name: "MARKET DATA"
+        source: "property_details"
+        fields:
+          - label: "Market Segment"
+            path: "market.segment"
+            fallback: "N/A"
+
+  - id: 9
+    name: "TRANSACTION HISTORY"
+    coverage: "100%"
+    # Fully handled by custom extractor
+    custom_extractors:
+      - name: "transaction_history"
+
+  - id: 10
+    name: "CAMPAIGNS"
+    coverage: "100%"
+    # Fully handled by custom extractor
+    custom_extractors:
+      - name: "campaigns"
+
+  - id: 11
+    name: "SALES EVIDENCE"
+    coverage: "100%"
+    # Fully handled by custom extractor
+    custom_extractors:
+      - name: "sales_evidence"
+
+# Formatting rules
+formatters:
+  area:
+    type: "numeric"
+    suffix: " m²"
+    thousands_separator: ","
+    decimal_places: 0
+
+  currency:
+    type: "numeric"
+    prefix: "$"
+    thousands_separator: ","
+    decimal_places: 0
+
+  percentage:
+    type: "numeric"
+    suffix: "%"
+    decimal_places: 1
+
+  date:
+    type: "date"
+    input_format: "%Y-%m-%d"
+    output_format: "%d/%m/%Y"
+
+# Global settings
+settings:
+  missing_data_fallback: "Unknown"
+  text_truncation_length: 100
+  text_wrap_width: 80
+  max_list_items: 10

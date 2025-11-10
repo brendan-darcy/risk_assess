@@ -1,0 +1,465 @@
+# .claudeignore Template for Apprise P&T Team
+#
+# Purpose: Prevent Claude Code from accessing sensitive files
+# Compliance: ISO 27001:2022, Apprise AI Usage Policy, ISMS
+# Last Updated: October 2025
+#
+# INSTRUCTIONS:
+# 1. Copy this file to your project root as .claudeignore
+# 2. Customize the [PROJECT-SPECIFIC] sections for your project
+# 3. Verify patterns match your sensitive files: ls -la <pattern>
+# 4. Test exclusion: confirm Claude cannot see excluded files
+# 5. Keep this file updated as project structure changes
+#
+# SYNTAX: Same as .gitignore (glob patterns)
+# - Use **/ for recursive matching
+# - Use * for wildcards
+# - Use ! to negate (whitelist)
+# - Lines starting with # are comments
+#
+# ============================================================================
+# SECTION 1: SENSITIVE DATA FILES (CLIENT INFORMATION)
+# ============================================================================
+#
+# These patterns prevent Claude from accessing files that may contain:
+# - Client PII (names, emails, addresses, phone numbers)
+# - Property valuation data
+# - Borrower information
+# - Sales evidence data
+# - Financial information
+#
+# CRITICAL: These must ALWAYS be excluded
+
+# All CSV files (commonly contain client data)
+**/*.csv
+*.csv
+
+# Data directories (adjust paths for your project)
+**/data/**
+**/datasets/**
+**/input/**
+**/output/**
+**/exports/**
+**/imports/**
+
+# Client and PII directories
+**/client_data/**
+**/pii/**
+**/personal/**
+**/borrower_data/**
+**/valuation_data/**
+**/sales_evidence/**
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+**/*.db
+**/database/**
+
+# Excel files (often contain sensitive data)
+**/*.xlsx
+**/*.xls
+*.xlsx
+*.xls
+
+# JSON data files (may contain API responses with client data)
+**/data/**/*.json
+**/responses/**/*.json
+
+# Parquet files (big data formats)
+**/*.parquet
+*.parquet
+
+# [PROJECT-SPECIFIC] Add your project's data folders here:
+# **/my_data_folder/**
+# **/valuation_exports/**
+
+# ============================================================================
+# SECTION 2: CREDENTIALS & SECRETS
+# ============================================================================
+#
+# These patterns prevent Claude from accessing authentication credentials,
+# API keys, tokens, and other secrets that could compromise security
+
+# Environment files
+.env
+.env.*
+.env.local
+.env.production
+.env.development
+.env.staging
+.env.test
+.env.backup
+.env.*.local
+**/.env
+**/.env.*
+**/*.env
+
+# But allow example/template files (these should have dummy values)
+!.env.example
+!.env.template
+!env.example
+!env.template
+
+# Credential files
+credentials.json
+credentials.yaml
+credentials.yml
+credentials.xml
+**/credentials/**
+**/secrets/**
+**/*_credentials.*
+**/*_secret.*
+**/secret_*
+secret_*
+
+# API keys and tokens
+**/api_keys/**
+**/*.key
+**/*.pem
+**/*.p12
+**/*.pfx
+*.key
+*.pem
+
+# AWS credentials
+.aws/credentials
+.aws/config
+**/.aws/credentials
+
+# SSH keys
+**/.ssh/id_rsa
+**/.ssh/id_dsa
+**/.ssh/id_ecdsa
+**/.ssh/id_ed25519
+**/.ssh/*.pem
+
+# Cloud provider configs
+.gcloud/
+.azure/
+
+# Configuration with sensitive data
+config/secrets.json
+config/credentials.json
+**/config/production.json
+**/config/prod.json
+
+# [PROJECT-SPECIFIC] Add your project's credential files:
+# **/my_secrets.yaml
+# **/salesforce_credentials.json
+
+# ============================================================================
+# SECTION 3: LANGUAGE-SPECIFIC BUILD ARTIFACTS & DEPENDENCIES
+# ============================================================================
+#
+# These prevent Claude from accessing large dependency folders and
+# build artifacts that slow down context loading
+
+# Node.js
+node_modules/
+**/node_modules/**
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+.yarn/
+package-lock.json  # Optional: uncomment if you want to exclude lock files
+# yarn.lock
+
+# Python
+__pycache__/
+**/__pycache__/**
+*.py[cod]
+*py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.pytest_cache/
+.coverage
+.tox/
+.venv/
+venv/
+ENV/
+env/
+.spyderproject
+.spyproject
+.ropeproject
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# R
+.Rhistory
+.RData
+.Rproj.user
+*_cache/
+*.Rproj
+
+# Java/Maven/Gradle
+target/
+*.class
+*.jar
+*.war
+*.ear
+.gradle/
+build/
+.classpath
+.project
+.settings/
+
+# .NET
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+packages/
+
+# ============================================================================
+# SECTION 4: IDE & EDITOR FILES
+# ============================================================================
+#
+# IDE files often contain project-specific paths and configurations
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# IntelliJ / WebStorm / PyCharm
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.*.swp
+.*.swo
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# ============================================================================
+# SECTION 5: OPERATING SYSTEM FILES
+# ============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# ============================================================================
+# SECTION 6: LOGS & TEMPORARY FILES
+# ============================================================================
+#
+# Log files may contain sensitive debugging information
+
+# Log files
+*.log
+**/*.log
+logs/
+**/logs/**
+*.log.*
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+**/tmp/**
+**/temp/**
+*.bak
+*.backup
+*.old
+
+# ============================================================================
+# SECTION 7: VERSION CONTROL & GIT
+# ============================================================================
+#
+# Prevent Claude from accessing git internals
+
+.git/
+.gitignore_global
+*.orig
+*.rej
+
+# ============================================================================
+# SECTION 8: DOCUMENTATION WITH SENSITIVE INFO
+# ============================================================================
+#
+# Some documentation files may contain architectural diagrams,
+# access patterns, or deployment details that should remain private
+
+# Uncomment if your docs contain sensitive architecture details:
+# **/internal_docs/**
+# **/architecture/security/**
+# **/deployment_guides/**
+
+# ============================================================================
+# SECTION 9: SALESFORCE-SPECIFIC (Apprise ARMATech)
+# ============================================================================
+#
+# Salesforce development files that may contain org-specific info
+
+# SFDX
+.sfdx/
+.salesforce/
+
+# Salesforce cache
+.localdevserver/
+.sf/
+
+# Org-specific metadata (may contain production org IDs)
+# **/config/project-scratch-def.json  # Uncomment if contains sensitive org configs
+
+# [PROJECT-SPECIFIC] Salesforce customization:
+# Add any Apprise-specific Salesforce paths here
+
+# ============================================================================
+# SECTION 10: AWS & CLOUD-SPECIFIC (Apprise ARMATech)
+# ============================================================================
+#
+# AWS Lambda and cloud deployment files
+
+# Terraform state (contains sensitive resource IDs)
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# CloudFormation
+**/cloudformation/prod/**
+**/cloudformation/production/**
+
+# SAM
+.aws-sam/
+samconfig.toml  # May contain account IDs
+
+# [PROJECT-SPECIFIC] AWS paths:
+# **/lambda_functions/prod/**
+
+# ============================================================================
+# SECTION 11: DATABRICKS-SPECIFIC (Apprise ARMATech)
+# ============================================================================
+#
+# Databricks notebooks and configurations
+
+# Databricks config (may contain workspace URLs and tokens)
+.databrickscfg
+**/.databrickscfg
+
+# Databricks bundles
+.databricks/
+
+# [PROJECT-SPECIFIC] Databricks paths:
+# Add your Databricks workspace-specific paths
+
+# ============================================================================
+# SECTION 12: TEST DATA (CONDITIONAL)
+# ============================================================================
+#
+# Test data directories should contain ONLY dummy data
+# If you're unsure whether test data is sanitized, exclude it
+#
+# IMPORTANT: If your test data is ALL dummy data (synthetic, Faker-generated),
+# you may comment out these exclusions to allow Claude to see test examples
+
+# Uncomment these if test data might contain real client data:
+# **/test_data/**
+# **/fixtures/**
+# **/mock_data/**
+# **/sample_data/**
+
+# ============================================================================
+# SECTION 13: BACKUPS & ARCHIVES
+# ============================================================================
+
+# Backup files
+*.bak
+*.backup
+**/backups/**
+**/backup/**
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# ============================================================================
+# SECTION 14: SECURITY SCAN RESULTS
+# ============================================================================
+#
+# Security scan outputs may contain vulnerability details
+
+**/security_scan_results/**
+**/vulnerability_reports/**
+**/pen_test_results/**
+trivy-report.json
+snyk-report.json
+
+# ============================================================================
+# SECTION 15: PROJECT-SPECIFIC CUSTOMIZATIONS
+# ============================================================================
+#
+# Add any project-specific patterns below this line
+# Format: **/path/to/exclude/**
+
+# Example:
+# **/apprise_internal/**
+# **/legacy_data/**
+# **/migration_scripts/prod/**
+
+# [YOUR PROJECT-SPECIFIC EXCLUSIONS HERE]
+
+
+# ============================================================================
+# END OF .claudeignore TEMPLATE
+# ============================================================================
+#
+# VERIFICATION CHECKLIST:
+# ☐ Copied to project root as .claudeignore (not .claudeignore.template)
+# ☐ Customized [PROJECT-SPECIFIC] sections
+# ☐ Verified sensitive files are excluded: ls -la <pattern>
+# ☐ Tested in Claude Code (confirm sensitive files not visible)
+# ☐ Added to git: git add .claudeignore && git commit -m "Add .claudeignore"
+#
+# MAINTENANCE:
+# - Review quarterly or when project structure changes
+# - Update when new sensitive data sources added
+# - Verify after major refactoring
+#
+# SUPPORT:
+# - Security questions: Contact InfoSec team
+# - Template questions: See /templates/pt-team/README.md
+# - Report issues: P&T Team Slack #engineering-ai-templates

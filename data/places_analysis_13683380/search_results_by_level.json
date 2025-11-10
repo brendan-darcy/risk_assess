@@ -4,7 +4,7 @@
     "latitude": -37.8587538,
     "longitude": 145.1868964
   },
-  "timestamp": "2025-11-09T18:46:17.164967",
+  "timestamp": "2025-11-09T20:26:36.875582",
   "api_calls_made": 6,
   "search_strategy": {
     "approach": "Batched searches per level for efficiency",
@@ -139,8 +139,8 @@
         },
         {
           "types": [
-            "point_of_interest",
             "health",
+            "point_of_interest",
             "establishment"
           ],
           "formattedAddress": "502-514 Burwood Hwy, Vermont South VIC 3133, Australia",

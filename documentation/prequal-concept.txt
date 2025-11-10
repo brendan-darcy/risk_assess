@@ -22,16 +22,38 @@ The data is processed and categorised into structured fields, so it can be used 
 
 Pre-Qualify – Classification and Scoring
 Apprise’s data science team has developed a range of predictive scores and Computer Vision models. These proprietary models and algorithms are all hosted locally in our own secure environments and are applied to the subject property to be valued, and the possible sales evidence, all at the time of instruction.
+Imagery Tagging and Scores
 
-Has 6 compoennts:
-Imagery tgging and scores
-Market scores
-Natural Language processing
-Complexity
-Perils
-Risks
+•	Layer 1 Tagging – Identifies high level classifications such as: Indoor, Outdoor, Aerial, Floorplan, Under Construction, Not a property image
+•	Layer 2 Tagging – Bathroom, Entrance, Garage / Shed, Kitchen, Laundry, Living space, Pool, Recreational room, Sauna, Wine cellar, Carport, Frontage, Garage/Shed, Garden, Living space, Local or scenery image, Pool, Tennis court.
+•	Layer 3 Quality Scores – Quality of build for kitchen, wet rooms and street appeal.
+•	Completeness - indicating timeliness, quality and depth of imagery available.
+•	Strata Plans – derived characteristics from the strata plan or floorplan.
 
-Step 1
-use the APIs in this to get all the infromation available for data collection that we can get for an address:
+Image xx – Example of Pre-Qualify Layer 3 Processing for Kitchens 
 
-Step 2 - await further sintructions
+The above image is an example of Computer Vision’s Layer 3 processing.
+o	Step 1 - Once Layer 2 processing is complete, we pass all images classified as ‘Kitchen’ into Layer 3.
+o	Step 2 - Computer Vision then assesses each image across a range of dimensions: cabinetry, appliances, tapware, benchtops, overall style coherence etc
+o	Step 3 – An overall Kitchen Grade is produced for each image
+
+Market Scores
+A series of algorithms that assess and summarise trends and liquidity of the local market and the property uniqueness:
+•	Trends: Indicates price movement—rising, falling, flat, or volatile.
+•	Local Liquidity: Measures market activity using sales density, discounting, and trends.
+•	Secondary Market Liquidity: Evaluates liquidity using matched pairs of sales (same property sales) for high-density or new developments. An overall score of the liquidity is provided.
+•	Uniqueness: Scores how distinct the subject property is compared to its local market.
+[Image – matched pairs summary analysis with chart.]
+ 
+[Image – time series charts with trend ratings.]
+ 
+
+Natural Language Processing (NLP)
+ARMATech applies NLP techniques to analyse descriptions of the subject property, same development sales, and local planning documents. This enables the system to flag bespoke or out-of-scope land uses, including:
+•	Acreages: Properties over 5,000 sqm where residential use is permitted under the zoning.
+•	Display Homes: Properties previously used as display homes by developers.
+•	Holiday Rentals: Developments wholly or partially designated for holiday rental use.
+•	Serviced Apartments: Developments with serviced apartment usage.
+•	Dual Occupancy: Properties detected as likely having a second dwelling on title.
+•	Business Use: a business is operated at the property makes it difficult to sell as vacant possession.
+

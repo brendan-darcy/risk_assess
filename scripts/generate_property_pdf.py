@@ -45,6 +45,25 @@ try:
 except ImportError:
     DATAPROCESSOR_AVAILABLE = False
 
+# Import new mapping engine and utilities
+try:
+    from utils.mapping_engine import MappingEngine
+    from utils.extraction_utils import (
+        get_nested_value,
+        format_missing_value,
+        truncate_text,
+        wrap_text,
+        format_currency,
+        format_area
+    )
+    from extractors.planning_zone_extractor import PlanningZoneExtractor
+    from extractors.development_approvals_extractor import DevelopmentApprovalsExtractor
+    from extractors.encumbrances_extractor import EncumbrancesExtractor
+    MAPPING_ENGINE_AVAILABLE = True
+except ImportError as e:
+    print(f"⚠️  Warning: Mapping engine not available: {e}", file=sys.stderr)
+    MAPPING_ENGINE_AVAILABLE = False
+
 try:
     from reportlab.lib.pagesizes import A4, letter
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -64,6 +83,19 @@ class PropertyDataPDFGenerator:
     def __init__(self):
         if not REPORTLAB_AVAILABLE:
             raise ImportError("reportlab is required. Install with: pip install reportlab")
+
+        # Initialize mapping engine and extractors
+        if MAPPING_ENGINE_AVAILABLE:
+            try:
+                self.mapping_engine = MappingEngine()
+                self.planning_extractor = PlanningZoneExtractor()
+                self.approvals_extractor = DevelopmentApprovalsExtractor()
+                self.encumbrances_extractor = EncumbrancesExtractor()
+            except Exception as e:
+                print(f"⚠️  Warning: Failed to initialize mapping engine: {e}", file=sys.stderr)
+                self.mapping_engine = None
+        else:
+            self.mapping_engine = None
 
         self.styles = getSampleStyleSheet()
         self.title_style = ParagraphStyle(
@@ -1124,6 +1156,1388 @@ class PropertyDataPDFGenerator:
 
         return data_rows
 
+    def extract_data_categorized(self, report: Dict[str, Any]) -> List[Tuple[str, str]]:
+        """
+        Extract data using the 11-category Pre-Qualification Data Collection structure.
+        Returns list of (label, value) tuples organized by categories.
+
+        Categories:
+        1. INSTRUCTIONS
+        2. LOCATION AND ADMINISTRATIVE
+        3. MAPPING, TOPOGRAPHY AND PLACES
+        4. LEGAL
+        5. CHARACTERISTICS
+        6. IMAGERY
+        7. OCCUPANCY
+        8. LOCAL MARKET
+        9. TRANSACTION HISTORY
+        10. CAMPAIGNS
+        11. SALES EVIDENCE
+        """
+        data_rows = []
+
+        # Load additional data files
+        property_id = report.get('metadata', {}).get('property_id', 'N/A')
+        output_dir = Path('data/property_reports')
+
+        # Load comparable sales
+        comparable_sales = self._load_comparable_sales(property_id, output_dir)
+
+        # Load mesh block analysis
+        mesh_block_data = self._load_mesh_block_data(property_id, output_dir)
+
+        # Load parcel elevation/orientation
+        parcel_elev_orient = self._load_parcel_elevation_orientation(property_id, output_dir)
+
+        # Load Google Places impact analysis (from run_places_analysis.py)
+        places_impact = self._load_places_impact(property_id, output_dir)
+
+        # Load property images (from fetch_property_images.py)
+        property_images = self._load_property_images(property_id, output_dir)
+
+        # Load planning zones summary (from analyze_planning_zones.py)
+        planning_zones = self._load_planning_zones(output_dir)
+
+        # Load development approvals (from generate_development_approval_report.py)
+        development_approvals = self._load_development_approvals(output_dir, property_id)
+
+        # === CATEGORY 1: INSTRUCTIONS ===
+        data_rows.extend(self._extract_category_1_instructions(report))
+
+        # === CATEGORY 2: LOCATION AND ADMINISTRATIVE ===
+        data_rows.extend(self._extract_category_2_location_admin(report, mesh_block_data, planning_zones, development_approvals))
+
+        # === CATEGORY 3: MAPPING, TOPOGRAPHY AND PLACES ===
+        data_rows.extend(self._extract_category_3_mapping(report, mesh_block_data, places_impact))
+
+        # === CATEGORY 4: LEGAL ===
+        data_rows.extend(self._extract_category_4_legal(report))
+
+        # === CATEGORY 5: CHARACTERISTICS ===
+        data_rows.extend(self._extract_category_5_characteristics(report, parcel_elev_orient))
+
+        # === CATEGORY 6: IMAGERY ===
+        data_rows.extend(self._extract_category_6_imagery(property_images))
+
+        # === CATEGORY 7: OCCUPANCY ===
+        data_rows.extend(self._extract_category_7_occupancy(report))
+
+        # === CATEGORY 8: LOCAL MARKET ===
+        data_rows.extend(self._extract_category_8_local_market(report))
+
+        # === CATEGORY 9: TRANSACTION HISTORY ===
+        data_rows.extend(self._extract_category_9_transaction_history(report))
+
+        # === CATEGORY 10: CAMPAIGNS ===
+        data_rows.extend(self._extract_category_10_campaigns(report))
+
+        # === CATEGORY 11: SALES EVIDENCE ===
+        data_rows.extend(self._extract_category_11_sales_evidence(comparable_sales))
+
+        return data_rows
+
+    def _load_comparable_sales(self, property_id: str, output_dir: Path) -> Optional[Dict[str, Any]]:
+        """Load comparable sales JSON file"""
+        comp_file = output_dir / f"{property_id}_comparable_sales.json"
+        if comp_file.exists():
+            try:
+                with open(comp_file, 'r') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"Warning: Could not load comparable sales: {e}", file=sys.stderr)
+        return None
+
+    def _load_mesh_block_data(self, property_id: str, output_dir: Path) -> Optional[Dict[str, Any]]:
+        """Load mesh block analysis JSON file"""
+        mesh_file = output_dir / f"{property_id}_mesh_block_analysis_2000m.json"
+        if mesh_file.exists():
+            try:
+                with open(mesh_file, 'r') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"Warning: Could not load mesh block data: {e}", file=sys.stderr)
+        return None
+
+    def _load_parcel_elevation_orientation(self, property_id: str, output_dir: Path) -> Optional[Dict[str, Any]]:
+        """Load parcel elevation and orientation JSON file"""
+        parcel_file = output_dir / f"{property_id}_parcel_elevation_orientation.json"
+        if parcel_file.exists():
+            try:
+                with open(parcel_file, 'r') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"Warning: Could not load parcel elevation/orientation: {e}", file=sys.stderr)
+        return None
+
+    def _load_places_impact(self, property_id: str, output_dir: Path) -> Optional[Dict[str, Any]]:
+        """Load Google Places impact analysis from property-specific JSON file
+
+        Looks for {property_id}_property_impacts.json from run_places_analysis.py script.
+        Tries multiple possible locations:
+        1. {output_dir}/{property_id}_property_impacts.json (property-specific)
+        2. {output_dir}/../places_analysis/property_impacts.json (generic)
+        3. data/places_analysis/property_impacts.json (generic fallback)
+        """
+        # Try property-specific file first (recommended architecture)
+        places_file = output_dir / f"{property_id}_property_impacts.json"
+        if places_file.exists():
+            try:
+                with open(places_file, 'r') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"Warning: Could not load places impact from {places_file}: {e}", file=sys.stderr)
+
+    def _load_property_images(self, property_id: str, output_dir: Path) -> Optional[Dict[str, Any]]:
+        """Load property images metadata JSON file
+
+        Looks for {property_id}_property_images.json from fetch_property_images.py script.
+        """
+        images_file = output_dir / f"{property_id}_property_images.json"
+        if images_file.exists():
+            try:
+                with open(images_file, 'r') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"Warning: Could not load property images: {e}", file=sys.stderr)
+        return None
+
+    def _load_planning_zones(self, output_dir: Path) -> Optional[Dict[str, Any]]:
+        """Load planning zones summary from analyze_planning_zones.py script.
+
+        Looks for planning_zones_summary.json in data/ directory.
+        """
+        zones_file = output_dir.parent / 'planning_zones_summary.json'
+        if zones_file.exists():
+            try:
+                with open(zones_file, 'r') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"Warning: Could not load planning zones: {e}", file=sys.stderr)
+        return None
+
+    def _load_development_approvals(self, output_dir: Path, property_id: int) -> Optional[Dict[str, Any]]:
+        """Load development approvals from generate_development_approval_report.py script.
+
+        Looks for {property_id}_development_approvals.json in output directory.
+        """
+        approvals_file = output_dir / f'{property_id}_development_approvals.json'
+        if approvals_file.exists():
+            try:
+                with open(approvals_file, 'r') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"Warning: Could not load development approvals: {e}", file=sys.stderr)
+        return None
+
+    def _match_planning_zone(self, zone_code: str, zones_data: Optional[Dict]) -> Optional[Dict[str, Any]]:
+        """Match zone code to planning zone data.
+
+        Args:
+            zone_code: Zone code from property (e.g., "NRZ5")
+            zones_data: Planning zones summary data
+
+        Returns:
+            Matched zone data or None
+        """
+        if not zones_data or not zone_code:
+            return None
+
+        # Try to find matching zone in schemes
+        schemes = zones_data.get('schemes', {})
+
+        # Try exact match first (case-insensitive)
+        for scheme_key, scheme_data in schemes.items():
+            if zone_code.lower() in scheme_key.lower():
+                return scheme_data
+
+        # Try partial match on zone name
+        for scheme_key, scheme_data in schemes.items():
+            zone_name = scheme_data.get('zone_name', '').lower()
+            if 'neighbourhood' in zone_name and zone_code.lower().startswith('nrz'):
+                return scheme_data
+
+        return None
+
+        # Try generic file in places_analysis directory (legacy)
+        places_file = output_dir.parent / 'places_analysis' / 'property_impacts.json'
+        if places_file.exists():
+            try:
+                with open(places_file, 'r') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"Warning: Could not load places impact from {places_file}: {e}", file=sys.stderr)
+
+        # Try absolute path to generic file (legacy fallback)
+        places_file = Path('data/places_analysis/property_impacts.json')
+        if places_file.exists():
+            try:
+                with open(places_file, 'r') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"Warning: Could not load places impact from {places_file}: {e}", file=sys.stderr)
+
+        return None
+
+    def _extract_category_1_instructions(self, report: Dict[str, Any]) -> List[Tuple[str, str]]:
+        """Category 1: INSTRUCTIONS - Coverage 0%"""
+        rows = [
+            ("1. INSTRUCTIONS", ""),
+            ("Coverage", "0% - Not captured in source data"),
+            ("", ""),
+            ("[GAP] Note", "This category is not present in the current data model"),
+            ("", ""),
+            ("[GAP] Client Name", "Not captured"),
+            ("[GAP] Client Id", "Not captured"),
+            ("", ""),
+            ("[GAP] Job Number", "Not captured"),
+            ("[GAP] Job Type", "Not captured"),
+            ("[GAP] Valuation Estimate", "Not captured"),
+            ("", ""),
+            ("[GAP] Parties", "Not captured"),
+            ("[GAP] Special Instructions", "Not captured"),
+            ("", ""),
+        ]
+        return rows
+
+    def _extract_category_2_location_admin(self, report: Dict[str, Any], mesh_block_data: Optional[Dict],
+                                           planning_zones: Optional[Dict] = None,
+                                           development_approvals: Optional[Dict] = None) -> List[Tuple[str, str]]:
+        """Category 2: LOCATION AND ADMINISTRATIVE - Coverage 100%
+
+        Uses hybrid approach:
+        - Simple fields extracted via mapping engine (YAML config)
+        - Complex logic handled by specialized extractors
+        """
+        rows = []
+
+        # Use mapping engine if available, otherwise fall back to legacy code
+        if self.mapping_engine and MAPPING_ENGINE_AVAILABLE:
+            return self._extract_category_2_hybrid(report, mesh_block_data, planning_zones, development_approvals)
+
+        # Legacy extraction (original code)
+        return self._extract_category_2_legacy(report, mesh_block_data, planning_zones, development_approvals)
+
+    def _extract_category_2_hybrid(self, report: Dict[str, Any], mesh_block_data: Optional[Dict],
+                                   planning_zones: Optional[Dict] = None,
+                                   development_approvals: Optional[Dict] = None) -> List[Tuple[str, str]]:
+        """Hybrid extraction using mapping engine + extractors"""
+        rows = []
+
+        # Prepare all data sources
+        all_data = {
+            'property_details': report.get('property_details', {}),
+            'mesh_block_data': mesh_block_data,
+            'planning_zones': planning_zones,
+            'development_approvals': development_approvals,
+            'metadata': report.get('metadata', {})
+        }
+
+        # Extract simple fields from config
+        rows.extend(self.mapping_engine.extract_category_simple_fields(2, all_data))
+
+        # Extract complex fields using specialized extractors
+        site = all_data['property_details'].get('site', {})
+        zone_code = site.get('zoneCodeLocal', 'Unknown')
+
+        # Match planning zone data
+        zone_data = self._match_planning_zone(zone_code, planning_zones) if planning_zones else None
+
+        # Planning zone sections (complex extraction)
+        if zone_data:
+            rows.extend(self.planning_extractor.extract_section_1_uses(zone_data))
+            rows.extend(self.planning_extractor.extract_section_2_uses(zone_data))
+            rows.extend(self.planning_extractor.extract_opportunities_and_requirements(zone_data))
+        else:
+            # No zone data available
+            rows.append(("Section 1 - Permit NOT Required", "Unknown"))
+            rows.append(("Section 2 - Permit Required", "Unknown"))
+            rows.append(("Opportunities & Requirements", "Unknown"))
+            rows.append(("", ""))
+
+        # Development approvals (complex extraction)
+        rows.extend(self.approvals_extractor.extract(development_approvals))
+
+        return rows
+
+    def _extract_category_2_legacy(self, report: Dict[str, Any], mesh_block_data: Optional[Dict],
+                                   planning_zones: Optional[Dict] = None,
+                                   development_approvals: Optional[Dict] = None) -> List[Tuple[str, str]]:
+        """Legacy category 2 extraction (original code - used as fallback)"""
+        rows = [
+            ("2. LOCATION AND ADMINISTRATIVE", ""),
+            ("Coverage", "100% - Complete"),
+            ("", ""),
+        ]
+
+        property_details = report.get('property_details', {})
+        location = property_details.get('location', {})
+        site = property_details.get('site', {})
+
+        # ADDRESS sub-section
+        rows.append(("ADDRESS", ""))
+        address = report.get('metadata', {}).get('address', 'N/A')
+        rows.append(("Address", address))
+        rows.append(("", ""))
+
+        # LOCATION sub-section
+        rows.append(("LOCATION", ""))
+        rows.append(("Council Area", location.get('councilArea', 'N/A')))
+        rows.append(("Postcode", location.get('postcode', {}).get('name', 'N/A')))
+        rows.append(("Locality", location.get('locality', {}).get('name', 'N/A')))
+
+        # Coordinates
+        lat = location.get('latitude')
+        lon = location.get('longitude')
+        if lat and lon:
+            rows.append(("Coordinates", f"{lat}, {lon}"))
+        rows.append(("", ""))
+
+        # STATISTICAL AREAS sub-section
+        if mesh_block_data:
+            mesh_analysis = mesh_block_data.get('mesh_block_analysis', {})
+
+            rows.append(("STATISTICAL AREAS", ""))
+
+            # SA1 Codes
+            sa1_codes = mesh_analysis.get('sa1_codes', [])
+            total_sa1 = mesh_analysis.get('total_sa1_codes', len(sa1_codes))
+            if sa1_codes:
+                first_5 = sa1_codes[:5]
+                remaining = total_sa1 - 5
+                sa1_str = f"{total_sa1} codes: {', '.join(map(str, first_5))}"
+                if remaining > 0:
+                    sa1_str += f" (+ {remaining} more)"
+                rows.append(("SA1 Codes", sa1_str))
+
+            # SA2 Areas
+            sa2_names = mesh_analysis.get('sa2_names', [])
+            if sa2_names:
+                rows.append(("SA2 Areas", ", ".join(sa2_names)))
+
+            # SA3 Areas
+            sa3_names = mesh_analysis.get('sa3_names', [])
+            if sa3_names:
+                rows.append(("SA3 Areas", ", ".join(sa3_names)))
+
+            # SA4 Areas
+            sa4_names = mesh_analysis.get('sa4_names', [])
+            if sa4_names:
+                rows.append(("SA4 Areas", ", ".join(sa4_names)))
+
+            rows.append(("", ""))
+
+        # Top-level fields
+        rows.append(("State", report.get('metadata', {}).get('state', 'N/A')))
+
+        # PLANNING AND ZONING sub-section
+        rows.append(("PLANNING AND ZONING", ""))
+
+        zone_code = site.get('zoneCodeLocal', 'Unknown')
+        zone_description = site.get('zoneDescriptionLocal', 'Unknown')
+
+        rows.append(("Zoning > Code", zone_code))
+        rows.append(("Zoning > Description", zone_description))
+        rows.append(("", ""))
+
+        # Try to match planning zone data
+        zone_data = self._match_planning_zone(zone_code, planning_zones) if planning_zones else None
+
+        if zone_data:
+            table_of_uses = zone_data.get('table_of_uses', {})
+
+            # Section 1 - Permit NOT required (structured data)
+            section1_uses = table_of_uses.get('section_1_uses', [])
+            if section1_uses:
+                rows.append(("Section 1 - Permit NOT Required", ""))
+                for i, use in enumerate(section1_uses[:10], 1):  # Limit to first 10
+                    rows.append((f"  {i}", use[:100]))  # Truncate long uses
+                if len(section1_uses) > 10:
+                    rows.append(("  ...", f"+ {len(section1_uses) - 10} more uses"))
+                rows.append(("", ""))
+            else:
+                rows.append(("Section 1 - Permit NOT Required", "Unknown"))
+                rows.append(("", ""))
+
+            # Section 2 - Permit required (structured data)
+            section2_uses = table_of_uses.get('section_2_uses', [])
+            if section2_uses:
+                rows.append(("Section 2 - Permit Required", ""))
+                for i, use in enumerate(section2_uses[:10], 1):  # Limit to first 10
+                    rows.append((f"  {i}", use[:100]))  # Truncate long uses
+                if len(section2_uses) > 10:
+                    rows.append(("  ...", f"+ {len(section2_uses) - 10} more uses"))
+                rows.append(("", ""))
+            else:
+                rows.append(("Section 2 - Permit Required", "Unknown"))
+                rows.append(("", ""))
+
+            # Sections 3 & 4 combined - Non-residential opportunities + Site requirements
+            combined_info = []
+
+            # Non-residential uses
+            non_res_uses = zone_data.get('non_residential_uses', [])
+            if non_res_uses:
+                combined_info.append("NON-RESIDENTIAL OPPORTUNITIES:")
+                for use in non_res_uses[:8]:  # Limit to 8
+                    combined_info.append(f"• {use}")
+                if len(non_res_uses) > 8:
+                    combined_info.append(f"• + {len(non_res_uses) - 8} more")
+
+            # Site requirements
+            site_reqs = zone_data.get('site_requirements', {})
+            if site_reqs:
+                if combined_info:
+                    combined_info.append("")  # Blank line separator
+                combined_info.append("SITE REQUIREMENTS:")
+                if site_reqs.get('minimum_lot_size'):
+                    combined_info.append(f"• Min Lot Size: {site_reqs['minimum_lot_size']}")
+                if site_reqs.get('site_coverage'):
+                    combined_info.append(f"• Site Coverage: {site_reqs['site_coverage']}")
+                if site_reqs.get('permeability'):
+                    combined_info.append(f"• Permeability: {site_reqs['permeability']}")
+
+            # Height restrictions
+            height_restrictions = zone_data.get('height_restrictions', [])
+            if height_restrictions:
+                if combined_info:
+                    combined_info.append("")
+                combined_info.append("HEIGHT RESTRICTIONS:")
+                for hr in height_restrictions[:3]:  # Limit to 3
+                    height = hr.get('height', 'Unknown')
+                    combined_info.append(f"• {height}")
+
+            if combined_info:
+                rows.append(("Opportunities & Requirements", "\n".join(combined_info)))
+            else:
+                rows.append(("Opportunities & Requirements", "Unknown"))
+
+        else:
+            # No planning zone data available
+            rows.append(("Section 1 - Permit NOT Required", "Unknown"))
+            rows.append(("Section 2 - Permit Required", "Unknown"))
+            rows.append(("Opportunities & Requirements", "Unknown"))
+
+        rows.append(("", ""))
+
+        # DEVELOPMENT APPROVALS sub-section
+        rows.append(("DEVELOPMENT APPROVALS", ""))
+
+        if development_approvals:
+            metadata = development_approvals.get('metadata', {})
+            summary = development_approvals.get('summary', {})
+            permits = development_approvals.get('permits', [])
+
+            # Summary statistics
+            rows.append(("Total Permits", str(metadata.get('total_permits', 0))))
+            rows.append(("Approved", str(summary.get('approved_permits', 0))))
+            rows.append(("Pending", str(summary.get('pending_permits', 0))))
+            rows.append(("Refused", str(summary.get('refused_permits', 0))))
+
+            if summary.get('latest_permit_date'):
+                rows.append(("Latest Permit Date", summary.get('latest_permit_date')))
+
+            rows.append(("", ""))
+
+            # Latest permit details
+            if permits:
+                latest_permit = permits[0]  # Already sorted by date in report
+                rows.append(("Latest Permit Details", ""))
+                rows.append(("  Permit Number", latest_permit.get('permit_number', 'Unknown')))
+                rows.append(("  Status", latest_permit.get('status', 'Unknown')))
+
+                decision_date = latest_permit.get('decision_date') or latest_permit.get('lodgement_date')
+                if decision_date:
+                    rows.append(("  Date", decision_date))
+
+                description = latest_permit.get('description')
+                if description:
+                    # Split long descriptions across multiple lines if needed
+                    if len(description) > 80:
+                        # Split into chunks
+                        words = description.split()
+                        lines = []
+                        current_line = []
+                        current_length = 0
+
+                        for word in words:
+                            if current_length + len(word) + 1 <= 80:
+                                current_line.append(word)
+                                current_length += len(word) + 1
+                            else:
+                                if current_line:
+                                    lines.append(' '.join(current_line))
+                                current_line = [word]
+                                current_length = len(word)
+
+                        if current_line:
+                            lines.append(' '.join(current_line))
+
+                        rows.append(("  Description", lines[0] if lines else description[:80]))
+                        for line in lines[1:]:
+                            rows.append(("", line))
+                    else:
+                        rows.append(("  Description", description))
+
+                permit_type = latest_permit.get('permit_type')
+                if permit_type and permit_type != "Planning Permit":
+                    rows.append(("  Permit Type", permit_type))
+
+                # Show additional permits if available
+                if len(permits) > 1:
+                    rows.append(("", ""))
+                    rows.append(("Additional Permits", f"{len(permits) - 1} earlier permit(s) on record"))
+        else:
+            rows.append(("Status", "No development approval data available"))
+
+        rows.append(("", ""))
+
+        return rows
+
+    def _extract_category_3_mapping(self, report: Dict[str, Any], mesh_block_data: Optional[Dict],
+                                   places_impact: Optional[Dict] = None) -> List[Tuple[str, str]]:
+        """Category 3: MAPPING, TOPOGRAPHY AND PLACES - Coverage 75%"""
+        rows = [
+            ("3. MAPPING, TOPOGRAPHY AND PLACES", ""),
+            ("Coverage", "75% - Good coverage"),
+            ("", ""),
+        ]
+
+        geo_layers = report.get('geospatial_layers', {})
+
+        # INFRASTRUCTURE sub-section
+        infrastructure = geo_layers.get('infrastructure', {})
+        if infrastructure:
+            rows.append(("INFRASTRUCTURE", ""))
+
+            # Check each infrastructure type
+            for key, label in [
+                ('electric_transmission_lines', 'Electric Transmission'),
+                ('ferry', 'Ferry'),
+                ('railway', 'Railway'),
+                ('railway_stations', 'Railway Stations'),
+                ('streets', 'Streets')
+            ]:
+                infra_data = infrastructure.get(key, {})
+                if infra_data.get('available'):
+                    rows.append((label, "Available (image_check)"))
+
+            rows.append(("", ""))
+
+        # GEOSPATIAL LAYERS sub-section
+        if geo_layers:
+            rows.append(("GEOSPATIAL LAYERS", ""))
+
+            # Hazards (excluding heritage - shown in ENCUMBRANCES)
+            hazards = geo_layers.get('hazards', {})
+            if hazards:
+                rows.append(("Hazards", ""))
+                for hazard_name, hazard_data in hazards.items():
+                    # Skip heritage - it's shown in ENCUMBRANCES section
+                    if hazard_name == 'heritage':
+                        continue
+                    if isinstance(hazard_data, dict) and hazard_data.get('available'):
+                        method = hazard_data.get('method', 'N/A')
+                        rows.append((f"{hazard_name.title()}", f"Available ({method})"))
+                rows.append(("", ""))
+
+        # MESH BLOCK sub-section
+        if mesh_block_data:
+            mesh_analysis = mesh_block_data.get('mesh_block_analysis', {})
+
+            rows.append(("MESH BLOCK", ""))
+            rows.append(("Search Radius M", str(mesh_analysis.get('search_radius_m', 'N/A'))))
+            rows.append(("Total Meshblocks", str(mesh_analysis.get('total_meshblocks', 'N/A'))))
+            rows.append(("Residential Meshblocks", str(mesh_analysis.get('residential_meshblocks', 'N/A'))))
+            rows.append(("Non Residential Meshblocks", str(mesh_analysis.get('non_residential_meshblocks', 'N/A'))))
+
+            # Category Breakdown
+            category_breakdown = mesh_analysis.get('category_breakdown', {})
+            if category_breakdown:
+                breakdown_str = ", ".join([f"{cat}: {count}" for cat, count in category_breakdown.items()])
+                rows.append(("Category Breakdown", breakdown_str))
+
+            # Non-Residential Distances
+            nonres_distances = mesh_analysis.get('non_residential_distances', {})
+            if nonres_distances:
+                rows.append(("", ""))
+                rows.append(("Non-Residential Distances", ""))
+                rows.append(("Closest", f"{nonres_distances.get('closest_m', 'N/A')}m"))
+                rows.append(("Average", f"{nonres_distances.get('average_m', 'N/A')}m"))
+                rows.append(("Farthest", f"{nonres_distances.get('farthest_m', 'N/A')}m"))
+
+            # Top 5 Closest Non-Residential
+            top_5 = mesh_analysis.get('top_5_closest_non_residential', [])
+            if top_5:
+                top_5_str = "; ".join([
+                    f"{i+1}. {block['category']} ({block['distance_m']}m, {block['sa2_name']})"
+                    for i, block in enumerate(top_5)
+                ])
+                rows.append(("Top 5 Closest Non-Residential", top_5_str))
+
+            rows.append(("", ""))
+
+        # SURROUNDING sub-section
+        # Try to use loaded places_impact from separate file first, otherwise fall back to embedded data
+        if not places_impact:
+            places_impact = report.get('google_places_impact', {})
+
+        if places_impact and not places_impact.get('error'):
+            rows.append(("SURROUNDING", ""))
+
+            # Handle multiple data structures:
+            # 1. Property-specific file with 'summary' and 'closest_impacts' at top level
+            # 2. Full property_impacts.json with 'summary' and 'impact_analysis'
+            # 3. Embedded comprehensive_report.json structure
+
+            # Check if this is property-specific file structure (has 'summary' at top level)
+            if 'summary' in places_impact:
+                summary = places_impact.get('summary', {})
+                rows.append(("Total Categories", str(summary.get('total_categories', 'N/A'))))
+                rows.append(("Categories With Matches", str(summary.get('categories_with_matches', 'N/A'))))
+                rows.append(("Categories Without Matches", str(summary.get('categories_without_matches', 'N/A'))))
+
+                # Check if we have 'closest_impacts' at top level (property-specific file)
+                closest_impacts = places_impact.get('closest_impacts', [])
+
+                # Or if we have 'impact_analysis' structure (full property_impacts.json)
+                if not closest_impacts and 'impact_analysis' in places_impact:
+                    impact_analysis = places_impact.get('impact_analysis', {})
+                    closest_places = []
+                    for level_name, level_data in impact_analysis.items():
+                        for category_name, category_data in level_data.items():
+                            closest_place = category_data.get('closest_place')
+                            if closest_place:
+                                closest_places.append({
+                                    'category': category_name,
+                                    'name': closest_place.get('name'),
+                                    'distance_meters': closest_place.get('distance_meters'),
+                                    'level': level_name
+                                })
+                    closest_places.sort(key=lambda x: x.get('distance_meters', float('inf')))
+                    if closest_places:
+                        closest_impacts = [closest_places[0]]
+
+                # Display closest impact
+                if closest_impacts:
+                    closest = closest_impacts[0]
+                    rows.append(("Closest Impact Category", closest.get('category', 'N/A')))
+                    rows.append(("Closest Impact Name", closest.get('name', 'N/A')))
+                    rows.append(("Closest Impact Distance", f"{closest.get('distance_meters', 0):.1f}m"))
+                    rows.append(("Closest Impact Level", closest.get('level', 'N/A')))
+            else:
+                # Old embedded structure from comprehensive_report.json
+                rows.append(("Total Categories", str(places_impact.get('total_categories', 'N/A'))))
+                rows.append(("Categories With Matches", str(places_impact.get('categories_with_matches', 'N/A'))))
+                rows.append(("Categories Without Matches", str(places_impact.get('categories_without_matches', 'N/A'))))
+
+                # Closest Impacts
+                closest_impacts = places_impact.get('closest_impacts', [])
+                if closest_impacts:
+                    closest = closest_impacts[0]
+                    rows.append(("Closest Impact Category", closest.get('category', 'N/A')))
+                    rows.append(("Closest Impact Name", closest.get('name', 'N/A')))
+                    rows.append(("Closest Impact Distance", f"{closest.get('distance_meters', 0):.1f}m"))
+                    rows.append(("Closest Impact Level", closest.get('level', 'N/A')))
+
+            rows.append(("", ""))
+
+        return rows
+
+    def _extract_category_4_legal(self, report: Dict[str, Any]) -> List[Tuple[str, str]]:
+        """Category 4: LEGAL - Coverage 100%"""
+        rows = [
+            ("4. LEGAL", ""),
+            ("Coverage", "100% - Complete"),
+            ("", ""),
+        ]
+
+        property_details = report.get('property_details', {})
+        legal = property_details.get('legal', {})
+        geo_layers = report.get('geospatial_layers', {})
+
+        # ENCUMBRANCES sub-section - use extractor if available
+        if self.mapping_engine and MAPPING_ENGINE_AVAILABLE:
+            rows.extend(self.encumbrances_extractor.extract(geo_layers))
+        else:
+            # Legacy encumbrances extraction
+            rows.append(("ENCUMBRANCES", ""))
+
+            # Easements
+            easements = geo_layers.get('legal', {}).get('easements', {})
+            if easements and easements.get('available'):
+                rows.append(("Easements > Available", "Yes"))
+                rows.append(("Easements > Count", str(easements.get('count', 0))))
+                rows.append(("Easements > Features", f"{easements.get('count', 0)} found"))
+
+                # Show first 3 examples
+                features = easements.get('features', [])[:3]
+                for i, feat in enumerate(features, 1):
+                    attrs = feat.get('attributes', {})
+                    status_map = {'A': 'Active', 'I': 'Inactive'}
+                    status = status_map.get(attrs.get('status', ''), attrs.get('status', 'N/A'))
+                    pfi = attrs.get('pfi', 'N/A')
+                    ufi = attrs.get('ufi', 'N/A')
+                    rows.append((f"Example {i}", f"Status: {status}, PFI: {pfi}, UFI: {ufi}"))
+            else:
+                rows.append(("Easements > Available", "No"))
+
+            rows.append(("", ""))
+
+            # Heritage
+            hazards = geo_layers.get('hazards', {})
+            heritage = hazards.get('heritage', {})
+            if heritage:
+                heritage_available = heritage.get('available', False)
+                heritage_method = heritage.get('method', 'N/A')
+                rows.append(("Heritage > Available", "Yes" if heritage_available else "No"))
+                if heritage_available:
+                    rows.append(("Heritage > Detection Method", heritage_method))
+            else:
+                rows.append(("Heritage > Available", "No"))
+
+            rows.append(("", ""))
+
+        # Legal fields
+        rows.append(("Legal > Isactiveproperty", "Yes" if legal.get('isActiveProperty') else "No"))
+
+        legal_info = legal.get('legal', {})
+        rows.append(("Legal > Legal > Dateissued", str(legal_info.get('dateIssued', 'N/A'))))
+        rows.append(("Legal > Legal > Frontage", str(legal_info.get('frontage', 'N/A'))))
+        rows.append(("Legal > Legal > Realpropertydescription", legal_info.get('realPropertyDescription', 'N/A')))
+
+        # Parcels
+        parcels = legal.get('parcels', [])
+        if parcels:
+            parcel = parcels[0]
+            parcel_str = f"parcelId: {parcel.get('parcelId', 'N/A')}, landAuthority: {parcel.get('landAuthority', 'N/A')}"
+            rows.append(("Legal > Parcels #1", parcel_str))
+
+        # Title
+        title = legal.get('title', {})
+        rows.append(("Legal > Title > Titleindicator", title.get('titleIndicator', 'N/A')))
+
+        rows.append(("", ""))
+
+        # Property ID
+        rows.append(("Property Id", str(report.get('metadata', {}).get('property_id', 'N/A'))))
+        rows.append(("", ""))
+
+        return rows
+
+    def _extract_category_5_characteristics(self, report: Dict[str, Any], parcel_elev_orient: Optional[Dict]) -> List[Tuple[str, str]]:
+        """Category 5: CHARACTERISTICS - Coverage 100%"""
+        rows = [
+            ("5. CHARACTERISTICS", ""),
+            ("Coverage", "100% - Complete"),
+            ("", ""),
+        ]
+
+        property_details = report.get('property_details', {})
+        core_attrs = property_details.get('core_attributes', {})
+        additional_attrs = property_details.get('additional_attributes', {})
+        features = property_details.get('features', {})
+
+        # CORE ATTRIBUTES sub-section
+        rows.append(("CORE ATTRIBUTES", ""))
+        rows.append(("Baths", str(core_attrs.get('baths', 'N/A'))))
+        rows.append(("Beds", str(core_attrs.get('beds', 'N/A'))))
+        rows.append(("Carspaces", str(core_attrs.get('carSpaces', 'N/A'))))
+        rows.append(("Iscalculatedlandarea", "Yes" if core_attrs.get('isCalculatedLandArea') else "No"))
+        rows.append(("Landarea", str(core_attrs.get('landArea', 'N/A'))))
+        rows.append(("Landareasource", core_attrs.get('landAreaSource', 'N/A')))
+        rows.append(("Lockupgarages", str(core_attrs.get('lockUpGarages', 'N/A'))))
+        rows.append(("Propertysubtype", core_attrs.get('propertySubType', 'N/A')))
+        rows.append(("Propertysubtypeshort", core_attrs.get('propertySubTypeShort', 'N/A')))
+        rows.append(("Propertytype", core_attrs.get('propertyType', 'N/A')))
+        rows.append(("", ""))
+
+        # ADDITIONAL ATTRIBUTES sub-section
+        rows.append(("ADDITIONAL ATTRIBUTES", ""))
+        rows.append(("Airconditioned", "Yes" if additional_attrs.get('airConditioned') else "No"))
+        rows.append(("Ductedheating", "Yes" if additional_attrs.get('ductedHeating') else "No"))
+        rows.append(("Ensuite", str(additional_attrs.get('ensuite', 'N/A'))))
+        rows.append(("Fireplace", "Yes" if additional_attrs.get('fireplace') else "No"))
+        rows.append(("Floorarea", str(additional_attrs.get('floorArea', 'N/A'))))
+        rows.append(("Roofmaterial", additional_attrs.get('roofMaterial', 'N/A')))
+        rows.append(("Solarpower", "Yes" if additional_attrs.get('solarPower') else "No"))
+        rows.append(("Wallmaterial", additional_attrs.get('wallMaterial', 'N/A')))
+        rows.append(("Yearbuilt", str(additional_attrs.get('yearBuilt', 'N/A'))))
+        rows.append(("", ""))
+
+        # FEATURES sub-section
+        rows.append(("FEATURES", ""))
+
+        # Bullet point features
+        feature_list = features.get('features', [])
+        for feat in feature_list:
+            rows.append(("•", feat))
+
+        # Feature attributes
+        feature_attrs = features.get('featureAttributes', [])
+        for feat_attr in feature_attrs:
+            name = feat_attr.get('name', 'Unknown')
+            value = feat_attr.get('value', 'N/A')
+            rows.append((name, str(value)))
+
+        rows.append(("", ""))
+
+        # SPATIAL sub-section
+        if parcel_elev_orient:
+            rows.append(("SPATIAL", ""))
+
+            # Geometry basics
+            rows.append(("Geometry Type", parcel_elev_orient.get('geometry_type', 'N/A')))
+
+            spatial_ref = parcel_elev_orient.get('spatial_reference', {})
+            rows.append(("Spatial Reference", f"WKID {spatial_ref.get('wkid', 'N/A')}"))
+
+            parcel_attrs = parcel_elev_orient.get('parcel_attributes', {})
+            rows.append(("Property Area", f"{parcel_attrs.get('property_m2', 'N/A')} m²"))
+            rows.append(("Calculated Area", f"{parcel_attrs.get('st_area(geom)', 'N/A')} m²"))
+            rows.append(("Perimeter", f"{parcel_attrs.get('st_perimeter(geom)', 'N/A')} m"))
+
+            geometry = parcel_elev_orient.get('geometry', {})
+            rings = geometry.get('rings', [])
+            rows.append(("Polygon Rings", str(len(rings))))
+            if rings:
+                rows.append(("Vertices", str(len(rings[0]))))
+
+            rows.append(("", ""))
+
+            # Raw Geometry Coordinates (CONSOLIDATED)
+            rows.append(("Raw Geometry Coordinates (Web Mercator)", ""))
+            if rings:
+                ring = rings[0]
+                rows.append(("Ring 1", f"{len(ring)} vertices"))
+
+                # Consolidated X coordinates
+                x_coords = [str(coord[0]) for coord in ring]
+                rows.append(("X Coordinates", ", ".join(x_coords)))
+
+                # Consolidated Y coordinates
+                y_coords = [str(coord[1]) for coord in ring]
+                rows.append(("Y Coordinates", ", ".join(y_coords)))
+
+            rows.append(("", ""))
+
+            # Elevation
+            elev_analysis = parcel_elev_orient.get('elevation_analysis', {})
+            if elev_analysis:
+                rows.append(("Elevation", ""))
+
+                elev_stats = elev_analysis.get('elevation_statistics', {})
+                rows.append(("Min Elevation", f"{elev_stats.get('min_elevation_m', 'N/A')}m"))
+                rows.append(("Max Elevation", f"{elev_stats.get('max_elevation_m', 'N/A')}m"))
+                rows.append(("Avg Elevation", f"{elev_stats.get('avg_elevation_m', 'N/A')}m"))
+                rows.append(("Elevation Range", f"{elev_stats.get('elevation_range_m', 'N/A')}m"))
+
+                slope_analysis = elev_analysis.get('slope_analysis', {})
+                max_slope = slope_analysis.get('max_slope', {})
+                rows.append(("Max Slope", f"{max_slope.get('slope_degrees', 'N/A')}° ({max_slope.get('slope_percent', 'N/A')}%)"))
+                rows.append(("Avg Slope", f"{slope_analysis.get('avg_slope_degrees', 'N/A')}° ({slope_analysis.get('avg_slope_percent', 'N/A')}%)"))
+
+                rows.append(("", ""))
+
+                # Center Point
+                center_elev = elev_analysis.get('center_elevation', {})
+                rows.append(("Center Point (WGS84)", ""))
+                rows.append(("Latitude", str(center_elev.get('lat', 'N/A'))))
+                rows.append(("Longitude", str(center_elev.get('lon', 'N/A'))))
+                rows.append(("Elevation", f"{center_elev.get('elevation_m', 'N/A')}m"))
+                rows.append(("Resolution", f"{center_elev.get('resolution_m', 'N/A')}m"))
+
+                rows.append(("", ""))
+
+                # Vertex Coordinates (CONSOLIDATED)
+                vertex_elevations = elev_analysis.get('vertex_elevations', [])
+                if vertex_elevations:
+                    rows.append(("Vertex Coordinates (WGS84 + Elevation)", ""))
+                    rows.append(("Total Vertices", str(len(vertex_elevations))))
+
+                    # Consolidated latitudes
+                    lats = [f"{v['lat']:.8f}" for v in vertex_elevations]
+                    rows.append(("Latitudes", ", ".join(lats)))
+
+                    # Consolidated longitudes
+                    lons = [f"{v['lon']:.8f}" for v in vertex_elevations]
+                    rows.append(("Longitudes", ", ".join(lons)))
+
+                    # Consolidated elevations
+                    elevs = [f"{v['elevation_m']:.2f}m" for v in vertex_elevations]
+                    rows.append(("Elevations", ", ".join(elevs)))
+
+                rows.append(("", ""))
+
+            # Orientation
+            orient_analysis = parcel_elev_orient.get('orientation_analysis', {})
+            if orient_analysis:
+                rows.append(("Orientation", ""))
+
+                frontage_edge = orient_analysis.get('frontage_edge', {})
+                rows.append(("Frontage Length", f"{frontage_edge.get('length_m', 'N/A')}m"))
+
+                frontage_orient = orient_analysis.get('frontage_orientation', {})
+                rows.append(("Frontage Direction", f"{frontage_orient.get('cardinal_direction', 'N/A')} ({frontage_orient.get('bearing_degrees', 'N/A')}°)"))
+
+                property_orient = orient_analysis.get('property_orientation', {})
+                rows.append(("Property Faces", f"{property_orient.get('cardinal_direction', 'N/A')} ({property_orient.get('bearing_degrees', 'N/A')}°)"))
+
+                rows.append(("", ""))
+
+                # Frontage Edge Vertices (NOT CONSOLIDATED)
+                rows.append(("Frontage Edge Vertices", ""))
+                vertex_1 = frontage_edge.get('vertex_1', {})
+                rows.append(("Vertex 1 (WGS84)", ""))
+                rows.append(("Latitude", str(vertex_1.get('lat', 'N/A'))))
+                rows.append(("Longitude", str(vertex_1.get('lon', 'N/A'))))
+
+                vertex_2 = frontage_edge.get('vertex_2', {})
+                rows.append(("Vertex 2 (WGS84)", ""))
+                rows.append(("Latitude", str(vertex_2.get('lat', 'N/A'))))
+                rows.append(("Longitude", str(vertex_2.get('lon', 'N/A'))))
+
+                rows.append(("", ""))
+
+                # Street Location
+                street_loc = orient_analysis.get('street_location', {})
+                rows.append(("Street Location (WGS84)", ""))
+                rows.append(("Latitude", str(street_loc.get('lat', 'N/A'))))
+                rows.append(("Longitude", str(street_loc.get('lon', 'N/A'))))
+                rows.append(("Detection Method", street_loc.get('method', 'N/A')))
+
+            rows.append(("", ""))
+
+        return rows
+
+    def _extract_category_6_imagery(self, property_images: Optional[Dict[str, Any]]) -> List[Tuple[str, str]]:
+        """Category 6: IMAGERY - Property Images"""
+        rows = [
+            ("6. IMAGERY", ""),
+            ("Coverage", "100% - Complete image metadata"),
+            ("", ""),
+        ]
+
+        if not property_images:
+            rows.append(("Status", "No image data available"))
+            rows.append(("", ""))
+            return rows
+
+        metadata = property_images.get('metadata', {})
+        summary = property_images.get('summary', {})
+
+        # Check for errors
+        if metadata.get('status') == 'error':
+            rows.append(("Status", "Error retrieving images"))
+            rows.append(("Error", str(property_images.get('error', 'Unknown error'))))
+            rows.append(("", ""))
+            return rows
+
+        # Image counts
+        rows.append(("IMAGE SUMMARY", ""))
+        rows.append(("Total Images", str(summary.get('total_images', 0))))
+        rows.append(("Has Default Image", "Yes" if summary.get('has_default_image') else "No"))
+        rows.append(("Secondary Images", str(summary.get('secondary_images_count', 0))))
+        rows.append(("Floor Plan Images", str(summary.get('floor_plan_images_count', 0))))
+        rows.append(("", ""))
+
+        # Image types
+        image_types = summary.get('image_types', [])
+        if image_types:
+            rows.append(("Image Types", ", ".join(image_types)))
+            rows.append(("", ""))
+
+        # Available sizes
+        available_sizes = summary.get('available_sizes', [])
+        if available_sizes:
+            rows.append(("AVAILABLE SIZES", ""))
+            for size in available_sizes:
+                rows.append(("", size))
+            rows.append(("", ""))
+
+        # Temporal coverage
+        if summary.get('oldest_scan_date'):
+            rows.append(("TEMPORAL COVERAGE", ""))
+            rows.append(("Oldest Scan Date", summary.get('oldest_scan_date', 'N/A')))
+            rows.append(("Newest Scan Date", summary.get('newest_scan_date', 'N/A')))
+            rows.append(("Unique Scan Dates", str(summary.get('unique_scan_dates', 0))))
+
+            if summary.get('temporal_span_years') is not None:
+                span_years = summary.get('temporal_span_years')
+                span_days = summary.get('temporal_span_days', 0)
+                rows.append(("Time Span", f"{span_years} years ({span_days} days)"))
+            rows.append(("", ""))
+
+        # Distribution by year
+        images_by_year = summary.get('images_by_year', {})
+        if images_by_year:
+            rows.append(("DISTRIBUTION BY YEAR", ""))
+            for year, count in images_by_year.items():
+                rows.append((year, f"{count} images"))
+            rows.append(("", ""))
+
+        # Digital asset types
+        asset_type_totals = summary.get('digital_asset_type_totals', {})
+        if asset_type_totals:
+            rows.append(("DIGITAL ASSET TYPES", ""))
+            for asset_type, count in asset_type_totals.items():
+                rows.append((asset_type, str(count)))
+            rows.append(("", ""))
+
+        # Distribution by type (enhanced)
+        distribution_by_type = summary.get('distribution_by_type', {})
+        if distribution_by_type:
+            rows.append(("DISTRIBUTION BY TYPE", ""))
+            for img_type, stats in distribution_by_type.items():
+                if stats.get('count', 0) > 0:
+                    rows.append((f"{img_type.title()} Images", ""))
+                    rows.append(("Count", str(stats.get('count', 0))))
+                    rows.append(("Unique Dates", str(stats.get('unique_dates', 0))))
+                    if stats.get('oldest_date'):
+                        date_range = f"{stats.get('oldest_date')} to {stats.get('newest_date')}"
+                        rows.append(("Date Range", date_range))
+                    rows.append(("", ""))
+
+        # Images by date (top 5)
+        images_by_date = summary.get('images_by_date', {})
+        if images_by_date:
+            rows.append(("TOP DATES WITH MOST IMAGES", ""))
+            # Sort by total count, descending
+            sorted_dates = sorted(images_by_date.items(), key=lambda x: x[1]['total'], reverse=True)[:5]
+            for date, counts in sorted_dates:
+                breakdown = []
+                if counts.get('default', 0) > 0:
+                    breakdown.append(f"{counts['default']} default")
+                if counts.get('secondary', 0) > 0:
+                    breakdown.append(f"{counts['secondary']} secondary")
+                if counts.get('floor_plan', 0) > 0:
+                    breakdown.append(f"{counts['floor_plan']} floor_plan")
+                breakdown_str = ", ".join(breakdown) if breakdown else "0"
+                rows.append((date, f"{counts['total']} images ({breakdown_str})"))
+            rows.append(("", ""))
+
+        return rows
+
+    def _extract_category_7_occupancy(self, report: Dict[str, Any]) -> List[Tuple[str, str]]:
+        """Category 7: OCCUPANCY - Coverage 70%"""
+        rows = [
+            ("7. OCCUPANCY", ""),
+            ("Coverage", "70% - Partial coverage"),
+            ("", ""),
+        ]
+
+        property_details = report.get('property_details', {})
+        occupancy = property_details.get('occupancy', {})
+        site = property_details.get('site', {})
+
+        rows.append(("Occupancy > Confidencescore", occupancy.get('confidenceScore', 'N/A')))
+        rows.append(("Occupancy > Isactiveproperty", "Yes" if occupancy.get('isActiveProperty') else "No"))
+        rows.append(("Occupancy > Occupancytype", occupancy.get('occupancyType', 'N/A')))
+        rows.append(("Site > Isactiveproperty", "Yes" if site.get('isActiveProperty') else "No"))
+        rows.append(("Site > Landuseprimary", site.get('landUsePrimary', 'N/A')))
+
+        site_values = site.get('siteValueList', [])
+        rows.append(("Site > Sitevaluelist", "None" if not site_values else f"{len(site_values)} values"))
+
+        rows.append(("Site > Zonecodelocal", site.get('zoneCodeLocal', 'N/A')))
+        rows.append(("Site > Zonedescriptionlocal", site.get('zoneDescriptionLocal', 'N/A')))
+        rows.append(("", ""))
+
+        return rows
+
+    def _extract_category_8_local_market(self, report: Dict[str, Any]) -> List[Tuple[str, str]]:
+        """Category 8: LOCAL MARKET - Coverage 95%"""
+        rows = [
+            ("8. LOCAL MARKET", ""),
+            ("Coverage", "95% - Excellent coverage"),
+            ("", ""),
+        ]
+
+        market_metrics = report.get('market_metrics_summary', {})
+        if market_metrics and not market_metrics.get('error'):
+            availability = market_metrics.get('availability', {})
+
+            rows.append(("MARKET METRICS AVAILABILITY", ""))
+            rows.append(("", ""))
+
+            # Show each metric with checkmark or X
+            for metric_name, metric_info in availability.items():
+                description = metric_info.get('description', metric_name.replace('_', ' ').title())
+
+                if metric_info.get('available'):
+                    data_points = metric_info.get('data_points', 0)
+                    interval = metric_info.get('interval', 'N/A')
+                    date_range = metric_info.get('date_range', 'N/A')
+
+                    rows.append((f"✓ {description}", ""))
+                    rows.append(("Data Points", f"{data_points} ({interval})"))
+                    rows.append(("Period", date_range))
+
+                    first_val = metric_info.get('first_value')
+                    last_val = metric_info.get('last_value')
+                    growth = metric_info.get('growth_percent')
+
+                    if first_val is not None:
+                        if 'price' in metric_name or 'value' in metric_name or 'rent' in metric_name:
+                            rows.append(("First Value", self._format_currency(first_val)))
+                            if last_val is not None:
+                                rows.append(("Latest Value", self._format_currency(last_val)))
+                        else:
+                            rows.append(("First Value", str(first_val)))
+                            if last_val is not None:
+                                rows.append(("Latest Value", str(last_val)))
+
+                    if growth is not None:
+                        rows.append(("Growth", f"{growth:+.1f}%"))
+                    elif 'latest_value' in metric_info:
+                        rows.append(("Latest Value", f"{metric_info['latest_value']:.2f}%"))
+                else:
+                    reason = metric_info.get('reason', 'No data returned from API')
+                    rows.append((f"✗ {description}", reason))
+
+                rows.append(("", ""))
+
+        return rows
+
+    def _extract_category_9_transaction_history(self, report: Dict[str, Any]) -> List[Tuple[str, str]]:
+        """Category 9: TRANSACTION HISTORY - Coverage 100%"""
+        rows = [
+            ("9. TRANSACTION HISTORY", ""),
+            ("Coverage", "100% - Complete"),
+            ("", ""),
+        ]
+
+        property_details = report.get('property_details', {})
+        last_sale = property_details.get('last_sale', {})
+        sales_history = property_details.get('sales_history', {})
+
+        # Last Sale fields
+        if last_sale:
+            rows.append(("Last Sale > Isactiveproperty", "Yes" if last_sale.get('isActiveProperty') else "No"))
+
+            last_sale_data = last_sale.get('lastSale', {})
+            if last_sale_data:
+                rows.append(("Last Sale > Lastsale > Agencyname", last_sale_data.get('agencyName', 'N/A')))
+                rows.append(("Last Sale > Lastsale > Agentname", last_sale_data.get('agentName', 'N/A')))
+                rows.append(("Last Sale > Lastsale > Contractdate", last_sale_data.get('contractDate', 'N/A')))
+                rows.append(("Last Sale > Lastsale > Isagentsadvice", "Yes" if last_sale_data.get('isAgentsAdvice') else "No"))
+                rows.append(("Last Sale > Lastsale > Isarmslength", "Yes" if last_sale_data.get('isArmsLength') else "No"))
+                rows.append(("Last Sale > Lastsale > Isderivedagency", "Yes" if last_sale_data.get('isDerivedAgency') else "No"))
+                rows.append(("Last Sale > Lastsale > Isderivedagent", "Yes" if last_sale_data.get('isDerivedAgent') else "No"))
+                rows.append(("Last Sale > Lastsale > Ismultisale", "Yes" if last_sale_data.get('isMultiSale') else "No"))
+                rows.append(("Last Sale > Lastsale > Ispricewithheld", "Yes" if last_sale_data.get('isPriceWithheld') else "No"))
+                rows.append(("Last Sale > Lastsale > Isrearecentsale", "Yes" if last_sale_data.get('isReaRecentSale') else "No"))
+                rows.append(("Last Sale > Lastsale > Isstandardtransfer", "Yes" if last_sale_data.get('isStandardTransfer') else "No"))
+                rows.append(("Last Sale > Lastsale > Landuseprimary", last_sale_data.get('landUsePrimary', 'N/A')))
+                rows.append(("Last Sale > Lastsale > Price", self._format_currency(last_sale_data.get('price', 0))))
+                rows.append(("Last Sale > Lastsale > Salemethod", last_sale_data.get('saleMethod', 'N/A')))
+                rows.append(("Last Sale > Lastsale > Settlementdate", last_sale_data.get('settlementDate', 'N/A')))
+                rows.append(("Last Sale > Lastsale > Transferid", str(last_sale_data.get('transferId', 'N/A'))))
+                rows.append(("Last Sale > Lastsale > Type", last_sale_data.get('type', 'N/A')))
+                rows.append(("Last Sale > Lastsale > Zonecodelocal", last_sale_data.get('zoneCodeLocal', 'N/A')))
+                rows.append(("Last Sale > Lastsale > Zonedescriptionlocal", last_sale_data.get('zoneDescriptionLocal', 'N/A')))
+
+        rows.append(("", ""))
+
+        # Sales History
+        if sales_history:
+            rows.append(("Sales History > Isactiveproperty", "Yes" if sales_history.get('isActiveProperty') else "No"))
+
+            sale_list = sales_history.get('saleList', [])
+            for i, sale in enumerate(sale_list[:2], 1):  # First 2
+                sale_str = f"type: {sale.get('type', 'N/A')}, Price: {self._format_currency(sale.get('price', 0))}, contractDate: {sale.get('contractDate', 'N/A')}"
+                rows.append((f"Sales History > Salelist #{i}", sale_str))
+
+        rows.append(("", ""))
+
+        return rows
+
+    def _extract_category_10_campaigns(self, report: Dict[str, Any]) -> List[Tuple[str, str]]:
+        """Category 10: CAMPAIGNS - Coverage 100%"""
+        rows = [
+            ("10. CAMPAIGNS", ""),
+            ("Coverage", "100% - Complete"),
+            ("", ""),
+        ]
+
+        property_details = report.get('property_details', {})
+        sales_otm = property_details.get('sales_otm', {})
+        sales_history = property_details.get('sales_history', {})
+        rentals_otm = property_details.get('rentals_otm', {})
+
+        # CAMPAIGN TIMELINE sub-section
+        rows.append(("CAMPAIGN TIMELINE", ""))
+
+        # Collect all campaign events
+        events = []
+
+        # From sales campaigns
+        for_sale_campaign = sales_otm.get('forSalePropertyCampaign', {})
+        campaigns = for_sale_campaign.get('campaigns', [])
+        for campaign in campaigns:
+            if campaign.get('fromDate'):
+                events.append(("■ Forsale Campaignstart", campaign['fromDate']))
+            if campaign.get('toDate'):
+                events.append(("■ Forsale Campaignend", campaign['toDate']))
+
+        # From rentals campaigns
+        for_rent_campaign = rentals_otm.get('forRentPropertyCampaign', {})
+        if for_rent_campaign:
+            rent_campaigns = for_rent_campaign.get('campaigns', [])
+            for campaign in rent_campaigns:
+                if campaign.get('fromDate'):
+                    events.append(("■ Forrent Campaignstart", campaign['fromDate']))
+                if campaign.get('toDate'):
+                    events.append(("■ Forrent Campaignend", campaign['toDate']))
+
+        # From sales history
+        sale_list = sales_history.get('saleList', [])
+        for sale in sale_list:
+            if sale.get('contractDate'):
+                events.append(("■ Sale", sale['contractDate']))
+
+        rows.append(("Total Events", str(len(events))))
+        rows.extend(events)
+        rows.append(("", ""))
+
+        # ADVERTISEMENT EXTRACTS sub-section
+        advertisements_data = property_details.get('advertisements', {})
+        ad_list = []
+
+        # Check if advertisements is a dict with advertisementList
+        if isinstance(advertisements_data, dict):
+            ad_list = advertisements_data.get('advertisementList', [])
+        elif isinstance(advertisements_data, list):
+            ad_list = advertisements_data
+
+        rows.append(("ADVERTISEMENT EXTRACTS", ""))
+        rows.append(("Total Advertisements", str(len(ad_list))))
+
+        for i, ad in enumerate(ad_list, 1):
+            rows.append(("", ""))
+            rows.append((f"Advertisement #{i}", ""))
+            rows.append(("Date", ad.get('date', 'N/A')))
+            rows.append(("Type", ad.get('advertisementType', ad.get('type', 'N/A'))))
+            price_desc = ad.get('priceDescription', '')
+            if not price_desc and 'price' in ad:
+                price_desc = f"${ad.get('price', 'N/A')} {ad.get('period', '')}"
+            rows.append(("Price", price_desc if price_desc else 'N/A'))
+            rows.append(("Method", ad.get('method', 'N/A')))
+            description = ad.get('advertisementDescription', ad.get('description', 'N/A'))
+            if len(description) > 100:
+                description = description[:100] + "..."
+            rows.append(("Description", description))
+
+        rows.append(("", ""))
+
+        return rows
+
+    def _extract_category_11_sales_evidence(self, comparable_sales: Optional[Dict]) -> List[Tuple[str, str]]:
+        """Category 11: SALES EVIDENCE - Coverage 100%"""
+        rows = [
+            ("11. SALES EVIDENCE", ""),
+            ("Coverage", "100% - Complete"),
+            ("", ""),
+        ]
+
+        if not comparable_sales:
+            rows.append(("[GAP] Note", "Comparable sales data not available"))
+            rows.append(("", ""))
+            return rows
+
+        rows.append(("[GAP] Note", "Comparable sales generated from radius search"))
+        rows.append(("", ""))
+
+        metadata = comparable_sales.get('metadata', {})
+        statistics = comparable_sales.get('statistics', {})
+        comp_list = comparable_sales.get('comparable_sales', [])
+
+        # COMPARABLE SALES SUMMARY sub-section
+        rows.append(("COMPARABLE SALES SUMMARY", ""))
+        rows.append(("Total Comparables", f"{metadata.get('total_comparables', len(comp_list))} properties"))
+        rows.append(("", ""))
+
+        # Price Statistics
+        price_stats = statistics.get('price_statistics', {})
+        rows.append(("Price Statistics", ""))
+        rows.append(("Median Price", self._format_currency(price_stats.get('median', 0))))
+        rows.append(("Mean Price", self._format_currency(price_stats.get('mean', 0))))
+        rows.append(("Price Range", f"{self._format_currency(price_stats.get('min', 0))} - {self._format_currency(price_stats.get('max', 0))}"))
+        rows.append(("", ""))
+
+        # Sale Date Range
+        date_range = statistics.get('date_range', {})
+        recent_25 = statistics.get('recent_25_date_range', {})
+        recent_50 = statistics.get('recent_50_date_range', {})
+
+        rows.append(("Sale Date Range", ""))
+        rows.append(("Overall Period", f"{date_range.get('earliest', 'N/A')} to {date_range.get('latest', 'N/A')}"))
+        rows.append(("Recent 25 Period", f"{recent_25.get('earliest', 'N/A')} to {recent_25.get('latest', 'N/A')} ({recent_25.get('count', 0)} sales)"))
+        rows.append(("Recent 50 Period", f"{recent_50.get('earliest', 'N/A')} to {recent_50.get('latest', 'N/A')} ({recent_50.get('count', 0)} sales)"))
+        rows.append(("", ""))
+
+        # Distance Distribution
+        dist_dist = statistics.get('distance_distribution', {})
+        rows.append(("Distance Distribution", ""))
+        rows.append(("Within 500m", f"{dist_dist.get('within_500m', 0)} properties"))
+        rows.append(("Within 1km", f"{dist_dist.get('within_1km', 0)} properties"))
+        rows.append(("Within 3km", f"{dist_dist.get('within_3km', 0)} properties"))
+        rows.append(("", ""))
+
+        # Property Characteristics
+        prop_chars = statistics.get('property_characteristics', {})
+        rows.append(("Property Characteristics", ""))
+
+        # Property Types
+        prop_types = prop_chars.get('propertyType', {}).get('distribution', {})
+        if prop_types:
+            types_str = ", ".join([f"{count} {ptype}" for ptype, count in prop_types.items()])
+            rows.append(("Property Types", types_str))
+
+        # Bedrooms
+        beds_dist = prop_chars.get('beds', {}).get('distribution', {})
+        if beds_dist:
+            beds_str = ", ".join([f"{count}×{beds}bd" for beds, count in sorted(beds_dist.items())])
+            rows.append(("Bedrooms", beds_str))
+
+        # Bathrooms
+        baths_dist = prop_chars.get('baths', {}).get('distribution', {})
+        if baths_dist:
+            baths_str = ", ".join([f"{count}×{baths}ba" for baths, count in sorted(baths_dist.items())])
+            rows.append(("Bathrooms", baths_str))
+
+        rows.append(("", ""))
+
+        # INDIVIDUAL COMPARABLES sub-section
+        rows.append(("INDIVIDUAL COMPARABLES", ""))
+        rows.append(("", ""))
+
+        # List ALL comparables
+        for i, comp in enumerate(comp_list, 1):
+            rows.append((f"Comparable #{i}", ""))
+            rows.append(("Address", comp.get('address', 'N/A')))
+            rows.append(("Sale Price", self._format_currency(comp.get('salePrice', 0))))
+
+            # Property format: "4bd / 2ba / 2car | HOUSE"
+            beds = comp.get('beds', 'N/A')
+            baths = comp.get('baths', 'N/A')
+            cars = comp.get('carSpaces', 'N/A')
+            ptype = comp.get('propertyType', 'N/A')
+            property_str = f"{beds}bd / {baths}ba / {cars}car | {ptype}"
+            rows.append(("Property", property_str))
+
+            rows.append(("Land Area", f"{comp.get('landArea', 'N/A')} m²"))
+            rows.append(("Distance", f"{comp.get('distance', 'N/A')} km"))
+            rows.append(("Sale Date", comp.get('lastSaleDate', 'N/A')))
+            rows.append(("", ""))
+
+        # SEARCH PARAMETERS sub-section
+        search_params = metadata.get('search_parameters', {})
+        rows.append(("SEARCH PARAMETERS", ""))
+        rows.append(("Search Radius", f"{search_params.get('radius', metadata.get('default_radius_km', 'N/A'))} km"))
+        rows.append(("", ""))
+
+        return rows
+
     def _load_mesh_block_summary(self, output_dir: Path = None) -> Optional[Dict[str, Any]]:
         """
         Load and summarize mesh block analysis data from CSV files.
@@ -1237,13 +2651,14 @@ class PropertyDataPDFGenerator:
         except:
             return str(amount)
 
-    def generate_pdf(self, report: Dict[str, Any], output_path: str, ultra_comprehensive: bool = False):
+    def generate_pdf(self, report: Dict[str, Any], output_path: str, ultra_comprehensive: bool = False, categorized: bool = False):
         """Generate PDF report from property data
 
         Args:
             report: Comprehensive property report dictionary
             output_path: Path to save PDF
             ultra_comprehensive: If True, uses flatten_json_recursive to extract ALL fields
+            categorized: If True, uses 10-category Pre-Qualification Data Collection structure
         """
 
         # Create PDF document with landscape orientation
@@ -1263,7 +2678,10 @@ class PropertyDataPDFGenerator:
 
         # Title
         metadata = report.get('metadata', {})
-        title_text = f"Property Data Report"
+        if categorized:
+            title_text = f"Pre-Qualification - Data Collection Example"
+        else:
+            title_text = f"Property Data Report"
         title = Paragraph(title_text, self.title_style)
         story.append(title)
 
@@ -1274,8 +2692,10 @@ class PropertyDataPDFGenerator:
         story.append(subtitle)
         story.append(Spacer(1, 0.1*inch))
 
-        # Extract data - use flattened mode if requested
-        if ultra_comprehensive:
+        # Extract data - choose extraction method based on flags
+        if categorized:
+            data_rows = self.extract_data_categorized(report)
+        elif ultra_comprehensive:
             data_rows = self.extract_data_flattened(report)
         else:
             data_rows = self.extract_data_summary(report)
@@ -1462,6 +2882,12 @@ Requirements:
         help='Extract ALL fields using flatten method (generates larger PDFs with every field)'
     )
 
+    parser.add_argument(
+        '--categorized',
+        action='store_true',
+        help='Use 10-category Pre-Qualification Data Collection structure (matches prequal-concept.txt)'
+    )
+
     args = parser.parse_args()
 
     try:
@@ -1494,7 +2920,12 @@ Requirements:
         # Generate PDF
         print(f"📄 Generating PDF report...", file=sys.stderr)
         generator = PropertyDataPDFGenerator()
-        generator.generate_pdf(report, output_pdf, ultra_comprehensive=args.ultra_comprehensive)
+        generator.generate_pdf(
+            report,
+            output_pdf,
+            ultra_comprehensive=args.ultra_comprehensive,
+            categorized=args.categorized
+        )
 
         print(f"\n✅ Report complete!", file=sys.stderr)
         print(f"📁 PDF saved to: {output_pdf}", file=sys.stderr)
